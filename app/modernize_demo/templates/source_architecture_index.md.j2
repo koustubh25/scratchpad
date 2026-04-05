@@ -1,0 +1,15 @@
+# Source Architecture Review
+
+- Review status: `{{ review_status }}`
+- Summary document: [../../architecture/source-architecture.md](../../architecture/source-architecture.md)
+- Modules covered: {{ architecture.summary.moduleCount }}
+- Tables referenced: {{ architecture.summary.tableCount }}
+- Endpoints inferred: {{ architecture.summary.endpointCount }}
+
+## Review Units
+
+{% for module in modules %}
+- `{{ module.module }}`: {{ module.role }}
+  Subsystem: {{ module.subsystem }}
+  Review doc: [modules/{{ module.module }}.md](modules/{{ module.module }}.md)
+{% endfor %}

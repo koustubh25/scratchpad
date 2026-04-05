@@ -1,0 +1,135 @@
+# Semantic Review: {{ semantic.module }}
+
+## Overview
+
+- Module: `{{ semantic.module }}`
+- File: `{{ semantic.file_path }}`
+- Module type: `{{ facts.module_type }}`
+- Review status: `{{ semantic.review.status }}`
+- Approved: `{{ semantic.review.approved }}`
+- Overall confidence: {{ semantic.confidence }}
+
+## Summary
+
+{{ semantic.summary }}
+
+Source: `{{ semantic.fields.summary.source }}`
+Confidence: {{ semantic.fields.summary.confidence }}
+Provider: `{{ semantic.fields.summary.provider }}`
+
+## Module Role
+
+- Role: `{{ semantic.module_role }}`
+- Source: `{{ semantic.fields.moduleRole.source }}`
+- Confidence: {{ semantic.fields.moduleRole.confidence }}
+- Provider: `{{ semantic.fields.moduleRole.provider }}`
+
+## Business Capabilities
+
+{% for capability in semantic.business_capabilities %}
+- `{{ capability.function }}`: {{ capability.description }} (confidence {{ capability.confidence }}, source `{{ capability.source }}`)
+{% endfor %}
+
+## Evidence Summary
+
+- Dependencies: {{ semantic.dependencies | join(", ") if semantic.dependencies else "none" }}
+- Data touch points: {{ semantic.data_touch_points | join(", ") if semantic.data_touch_points else "none" }}
+- Reads: {{ facts.reads | join(", ") if facts.reads else "none" }}
+- Writes: {{ facts.writes | join(", ") if facts.writes else "none" }}
+- Endpoints: {{ facts.endpoints | map(attribute='path') | join(", ") if facts.endpoints else "none" }}
+- Session usage: {{ facts.session_usage | join(", ") if facts.session_usage else "none" }}
+- Config usage: {{ facts.config_usage | join(", ") if facts.config_usage else "none" }}
+
+## Functions And Behaviors
+
+{% if facts.functions %}
+{% for function in facts.functions %}
+### `{{ function.name }}`
+
+- Calls: {{ function.calls | join(", ") if function.calls else "none" }}
+- Tables touched: {{ function.tables | join(", ") if function.tables else "none" }}
+- State writes: {{ function.scopeWrites | join(", ") if function.scopeWrites else "none" }}
+- Conditionals: {{ function.conditionals | join(" | ") if function.conditionals else "none" }}
+- Throws: {{ function.throws | join(", ") if function.throws else "none" }}
+
+{% endfor %}
+{% else %}
+- No function-level evidence captured.
+{% endif %}
+
+## Data Access Evidence
+
+{% if facts.tables_touched %}
+{% for item in facts.tables_touched %}
+- `{{ item.function }}` {{ item.operation }} `{{ item.table }}`
+{% endfor %}
+{% else %}
+- No table access evidence captured.
+{% endif %}
+
+## UI Evidence
+
+- Title: {{ facts.ui_evidence.get("title") or "none" }}
+- Headings: {{ facts.ui_evidence.get("headings", []) | join(", ") if facts.ui_evidence.get("headings") else "none" }}
+- Stylesheets: {{ facts.ui_evidence.get("stylesheets", []) | join(", ") if facts.ui_evidence.get("stylesheets") else "none" }}
+- Redirects: {{ facts.ui_evidence.get("redirects", []) | join(", ") if facts.ui_evidence.get("redirects") else "none" }}
+
+{% if facts.ui_evidence.get("forms") %}
+### Forms
+
+{% for form in facts.ui_evidence.get("forms", []) %}
+- Action: {{ form.action if form.action else "none" }} | Method: {{ form.method }}
+- Inputs: {% if form.inputs %}{% for input in form.inputs %}`{{ input.label if input.label else (input.name if input.name else "unnamed") }}`{% if input.name %} (`{{ input.name }}`){% endif %} type `{{ input.type }}`{% if input.required %} required{% endif %}{% if input.validate %} validate `{{ input.validate }}`{% endif %}{% if input.message %} message `{{ input.message }}`{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}{% else %}none{% endif %}
+{{ "\n" -}}
+- Submit labels: {{ form.submitLabels | join(", ") if form.submitLabels else "none" }}
+
+{% endfor %}
+{% else %}
+### Forms
+
+- No form evidence captured.
+{% endif %}
+
+{% if facts.ui_evidence.get("links") %}
+### Navigation Links
+
+{% for link in facts.ui_evidence.get("links", []) %}
+- `{{ link.text }}` -> `{{ link.href }}`
+{% endfor %}
+{% else %}
+### Navigation Links
+
+- No navigation links captured.
+{% endif %}
+
+{% if facts.ui_evidence.get("errorRegions") %}
+### Error Regions
+
+{% for region in facts.ui_evidence.get("errorRegions", []) %}
+- {{ region }}
+{% endfor %}
+{% else %}
+### Error Regions
+
+- No explicit error region text captured.
+{% endif %}
+
+## Inference Notes
+
+{% if facts.inference_notes %}
+{% for note in facts.inference_notes %}
+- `{{ note.field }}`: {{ note.reason }}
+{% endfor %}
+{% else %}
+- No inference notes recorded.
+{% endif %}
+
+## Review Notes
+
+{% if semantic.review.corrections %}
+{% for correction in semantic.review.corrections %}
+- Corrected `{{ correction.field }}` to `{{ correction.value }}` by `{{ correction.by }}` at `{{ correction.at }}`
+{% endfor %}
+{% else %}
+- No corrections yet.
+{% endif %}

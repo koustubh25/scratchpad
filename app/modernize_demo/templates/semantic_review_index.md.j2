@@ -1,0 +1,13 @@
+# Semantic Review Index
+
+Review status: `{{ review_status }}`
+
+This index is intended to scale by pointing reviewers at one document per module rather than one giant semantic dump.
+
+## Modules
+
+{% for module in modules %}
+- `{{ module.module }}`: {{ module.moduleRole }} | confidence {{ module.confidence }} | review `{{ module.status }}`
+  Review doc: [modules/{{ module.module }}.md](modules/{{ module.module }}.md)
+  Summary: {{ module.summary }}
+{% endfor %}

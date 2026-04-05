@@ -1,0 +1,25 @@
+# Architecture Comparison
+
+## Scope Compared
+
+- Reference document: `{{ comparison.scopeCompared.referenceDocument }}`
+- Derived modules: {{ comparison.scopeCompared.derivedModules | join(", ") }}
+
+## Major Alignments
+
+{% for item in comparison.alignments %}
+- {{ item }}
+{% endfor %}
+
+## Major Differences
+
+{% for item in comparison.differences %}
+- {{ item }}
+{% endfor %}
+
+## Confidence And Gaps
+
+{% for item in comparison.confidenceGaps %}
+- {{ item }}
+{% endfor %}
+

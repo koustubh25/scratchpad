@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modernize Flow Walkthrough</title>
+  <style>
+    :root {
+      --bg: #f5efe5;
+      --panel: rgba(255, 251, 244, 0.92);
+      --ink: #1f2933;
+      --muted: #657180;
+      --line: #d5c4a6;
+      --lane: #efe4cf;
+      --active: #c96b15;
+      --active-soft: #fff0d2;
+      --done: #4b8f60;
+      --done-soft: #e8f6ea;
+      --node: #fffdf8;
+      --node-border: #b79b70;
+      --shadow: 0 16px 40px rgba(75, 46, 18, 0.10);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(201, 107, 21, 0.10), transparent 22%),
+        radial-gradient(circle at bottom right, rgba(75, 143, 96, 0.10), transparent 26%),
+        linear-gradient(180deg, #f8f4ec 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 2140px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .intro {
+      max-width: 840px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .controls, .side {
+      background: var(--panel);
+      border: 1px solid rgba(183, 155, 112, 0.7);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      min-width: 320px;
+      padding: 16px;
+    }
+
+    .controls strong {
+      display: block;
+      color: var(--active);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .controls p {
+      margin: 0 0 12px;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid var(--node-border);
+      border-radius: 999px;
+      background: white;
+      padding: 9px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(1200px, 1.85fr) minmax(340px, 0.6fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .diagram {
+      background: var(--panel);
+      border: 1px solid rgba(183, 155, 112, 0.7);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 20px 24px;
+      overflow: hidden;
+    }
+
+    .side {
+      padding: 18px;
+      position: sticky;
+      top: 20px;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .lane-fill {
+      fill: rgba(239, 228, 207, 0.35);
+      stroke: rgba(183, 155, 112, 0.32);
+      stroke-width: 2;
+      rx: 22;
+    }
+
+    .lane-title {
+      font-size: 15px;
+      font-weight: 700;
+      fill: #7a5a31;
+      letter-spacing: 0.03em;
+    }
+
+    .node rect {
+      fill: var(--node);
+      stroke: var(--node-border);
+      stroke-width: 2;
+      rx: 20;
+      ry: 20;
+      transition: fill 220ms ease, stroke 220ms ease, opacity 220ms ease;
+    }
+
+    .node .label {
+      font-size: 16px;
+      font-weight: 700;
+      fill: var(--ink);
+      text-anchor: middle;
+    }
+
+    .node .desc {
+      font-size: 12px;
+      fill: var(--muted);
+      text-anchor: middle;
+    }
+
+    .node.pending { opacity: 0.25; }
+    .node.done rect {
+      fill: var(--done-soft);
+      stroke: var(--done);
+    }
+    .node.active rect {
+      fill: var(--active-soft);
+      stroke: var(--active);
+    }
+
+    .edge {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 4;
+      stroke-linecap: round;
+      opacity: 0.2;
+    }
+
+    .edge.done {
+      stroke: var(--done);
+      opacity: 0.5;
+    }
+
+    .edge.active {
+      stroke: var(--active);
+      opacity: 1;
+      stroke-width: 5;
+    }
+
+    .projection {
+      stroke: var(--node-border);
+      stroke-width: 2;
+      stroke-dasharray: 8 6;
+      opacity: 0.12;
+      fill: none;
+    }
+
+    .cross-cut-lane {
+      fill: rgba(232, 220, 198, 0.4);
+      stroke: rgba(183, 155, 112, 0.45);
+      stroke-width: 2;
+      stroke-dasharray: 12 6;
+      rx: 22;
+    }
+
+    .cross-cut-box rect {
+      stroke-dasharray: 8 4;
+    }
+
+    .cross-cut-box.pending {
+      opacity: 0.35;
+    }
+
+    .cross-cut-box.active rect,
+    .cross-cut-box.done rect {
+      stroke-dasharray: none;
+    }
+
+    .step-pill {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #fff2d9;
+      color: var(--active);
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .side h2 {
+      margin: 14px 0 10px;
+      font-size: 30px;
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+    }
+
+    .side p {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .step-visual {
+      margin-top: 14px;
+      background: linear-gradient(180deg, rgba(255, 245, 226, 0.9), rgba(255, 251, 244, 0.96));
+      border: 1px solid rgba(183, 155, 112, 0.55);
+      border-radius: 18px;
+      padding: 12px;
+    }
+
+    .step-visual svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(201, 107, 21, 0.08);
+      border: 1px solid rgba(201, 107, 21, 0.22);
+      color: #8e4f15;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .detail-grid {
+      display: grid;
+      gap: 10px;
+      margin: 12px 0 14px;
+    }
+
+    .detail-card {
+      border: 1px solid rgba(183, 155, 112, 0.35);
+      border-radius: 16px;
+      padding: 12px 13px;
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .detail-card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #7a5a31;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .detail-card p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--ink);
+      line-height: 1.45;
+    }
+
+    .side ul:empty {
+      display: none;
+    }
+
+    .side ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .side li {
+      margin-bottom: 10px;
+      line-height: 1.45;
+    }
+
+    .progress {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(183, 155, 112, 0.45);
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(183, 155, 112, 0.20);
+      margin-bottom: 8px;
+    }
+
+    .fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--active), #e3a03c);
+      transition: width 220ms ease;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 1500px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: static; }
+      .page { max-width: 1540px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div>
+        <h1>Modernize Flow Walkthrough</h1>
+        <p class="intro">
+          A flow-first walkthrough of the core modernization process. This version is intentionally about sequence,
+          handoffs, review gates, and outputs, not component relationships.
+        </p>
+      </div>
+      <div class="controls">
+        <strong>Presenter Controls</strong>
+        <p><code>Space</code> advances. <code>Shift + Space</code> or <code>Arrow Left</code> moves back.</p>
+        <div class="buttons">
+          <button id="prevBtn" type="button">Previous</button>
+          <button id="nextBtn" type="button">Next</button>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="diagram">
+        <svg viewBox="0 0 1940 2300" role="img" aria-labelledby="flowTitle">
+          <title id="flowTitle">Modernize flow walkthrough</title>
+          <defs>
+            <marker id="arrowDefault" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#d5c4a6"></path>
+            </marker>
+            <marker id="arrowActive" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#c96b15"></path>
+            </marker>
+            <marker id="arrowDone" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#4b8f60"></path>
+            </marker>
+          </defs>
+
+          <rect class="lane-fill" x="20" y="170" width="420" height="1820"></rect>
+          <text class="lane-title" x="40" y="202">Inputs</text>
+
+          <rect class="lane-fill" x="480" y="170" width="820" height="1820"></rect>
+          <text class="lane-title" x="500" y="202">Core Pipeline</text>
+
+          <rect class="lane-fill" x="1340" y="170" width="260" height="1820"></rect>
+          <text class="lane-title" x="1360" y="202">Human Review</text>
+
+          <rect class="lane-fill" x="1640" y="170" width="260" height="1820"></rect>
+          <text class="lane-title" x="1660" y="202">Outputs</text>
+
+          <!-- Projection lines from cross-cutting strip to pipeline area -->
+          <path class="projection" d="M262 2088 V210" />
+          <path class="projection" d="M727 2088 V210" />
+          <path class="projection" d="M1192 2088 V210" />
+          <path class="projection" d="M1657 2088 V210" />
+
+          <path id="e1" class="edge pending" d="M210 400 L210 430" marker-end="url(#arrowDefault)"></path>
+          <path id="e2" class="edge pending" d="M340 490 L560 490" marker-end="url(#arrowDefault)"></path>
+          <path id="e3" class="edge pending" d="M820 490 L960 490" marker-end="url(#arrowDefault)"></path>
+          <path id="e4" class="edge pending" d="M1090 550 L1090 580 L690 580 L690 610" marker-end="url(#arrowDefault)"></path>
+          <path id="e5" class="edge pending" d="M820 670 L1380 670" marker-end="url(#arrowDefault)"></path>
+          <path id="e6" class="edge pending" d="M1470 730 L1470 760 L690 760 L690 790" marker-end="url(#arrowDefault)"></path>
+          <path id="e7" class="edge pending" d="M820 850 L960 850" marker-end="url(#arrowDefault)"></path>
+          <path id="e8" class="edge pending" d="M1220 850 L1380 850" marker-end="url(#arrowDefault)"></path>
+          <path id="e9" class="edge pending" d="M1470 910 L1470 940 L690 940 L690 970" marker-end="url(#arrowDefault)"></path>
+          <path id="e10" class="edge pending" d="M690 1090 L690 1150" marker-end="url(#arrowDefault)"></path>
+          <path id="e11" class="edge pending" d="M820 1210 L960 1210" marker-end="url(#arrowDefault)"></path>
+          <path id="e12" class="edge pending" d="M1220 1210 L1380 1210" marker-end="url(#arrowDefault)"></path>
+          <path id="e13" class="edge pending" d="M1470 1270 L1470 1410 L690 1410 L690 1430" marker-end="url(#arrowDefault)"></path>
+          <path id="e13a" class="edge pending" d="M1070 1390 L1070 1430" marker-end="url(#arrowDefault)"></path>
+          <path id="e14" class="edge pending" d="M820 1490 L960 1490" marker-end="url(#arrowDefault)"></path>
+          <path id="e15" class="edge pending" d="M1220 1490 L1660 1490" marker-end="url(#arrowDefault)"></path>
+          <path id="e16" class="edge pending" d="M1770 1550 L1770 1580 L690 1580 L690 1670" marker-end="url(#arrowDefault)"></path>
+          <path id="e17" class="edge pending" d="M820 1730 L1660 1730" marker-end="url(#arrowDefault)"></path>
+
+          <g id="n0" class="node pending" data-step="0" transform="translate(80 40)">
+            <rect width="180" height="120"></rect>
+            <text class="label" x="90" y="44">CLI / Orchestrator</text>
+            <text class="desc" x="90" y="74">Control surface for stage</text>
+            <text class="desc" x="90" y="94">execution and recovery</text>
+          </g>
+
+          <g id="n1" class="node pending" data-step="1" transform="translate(80 280)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Source + Config Discovery</text>
+            <text class="desc" x="130" y="74">Inventory source files, config,</text>
+            <text class="desc" x="130" y="94">and environment inputs</text>
+          </g>
+
+          <g id="n2" class="node pending" data-step="2" transform="translate(80 430)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Legacy Source Code</text>
+            <text class="desc" x="130" y="74">Original application files,</text>
+            <text class="desc" x="130" y="94">templates, scripts, assets</text>
+          </g>
+
+          <g id="n3" class="node pending" data-step="3" transform="translate(560 430)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Source-Side Adapters</text>
+            <text class="desc" x="130" y="74">Parse source and apply</text>
+            <text class="desc" x="130" y="94">legacy-language conventions</text>
+          </g>
+
+          <g id="n4" class="node pending" data-step="4" transform="translate(960 430)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">AST + Fact Extraction</text>
+            <text class="desc" x="130" y="74">Create deterministic structure</text>
+            <text class="desc" x="130" y="94">and behavioral facts</text>
+          </g>
+
+          <g id="n5" class="node pending" data-step="5" transform="translate(560 610)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Semantic Derivation</text>
+            <text class="desc" x="130" y="74">Infer higher-level meaning</text>
+            <text class="desc" x="130" y="94">with bounded AI help</text>
+          </g>
+
+          <g id="n6" class="node pending" data-step="6" transform="translate(1380 610)">
+            <rect width="180" height="120"></rect>
+            <text class="label" x="90" y="44">Semantic Review</text>
+            <text class="desc" x="90" y="74">Approve, correct,</text>
+            <text class="desc" x="90" y="94">resolve ambiguity</text>
+          </g>
+
+          <g id="n7" class="node pending" data-step="7" transform="translate(560 790)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Semantic Lock</text>
+            <text class="desc" x="130" y="74">Freeze approved semantic</text>
+            <text class="desc" x="130" y="94">understanding</text>
+          </g>
+
+          <g id="n8" class="node pending" data-step="8" transform="translate(960 790)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Source Architecture</text>
+            <text class="desc" x="130" y="74">Approved as-is system model</text>
+            <text class="desc" x="130" y="94">and coupling baseline</text>
+          </g>
+
+          <g id="n9" class="node pending" data-step="9" transform="translate(1380 790)">
+            <rect width="180" height="120"></rect>
+            <text class="label" x="90" y="44">Source Architecture</text>
+            <text class="label" x="90" y="64">Review</text>
+            <text class="desc" x="90" y="88">Validate the as-is model</text>
+            <text class="desc" x="90" y="106">before target design</text>
+          </g>
+
+          <g id="n10" class="node pending" data-step="10" transform="translate(560 970)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Source Architecture Lock</text>
+            <text class="desc" x="130" y="74">Freeze approved current-state</text>
+            <text class="desc" x="130" y="94">architecture baseline</text>
+          </g>
+
+          <g id="n11" class="node pending" data-step="11" transform="translate(560 1150)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Target Stack Choice</text>
+            <text class="desc" x="130" y="74">Human-selected destination</text>
+            <text class="desc" x="130" y="94">technology and constraints</text>
+          </g>
+
+          <g id="n12" class="node pending" data-step="12" transform="translate(960 1150)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Target Architecture</text>
+            <text class="desc" x="130" y="74">Approved to-be services,</text>
+            <text class="desc" x="130" y="94">APIs, and design rules</text>
+          </g>
+
+          <g id="n13" class="node pending" data-step="13" transform="translate(1380 1150)">
+            <rect width="180" height="120"></rect>
+            <text class="label" x="90" y="44">Architecture Review</text>
+            <text class="desc" x="90" y="74">Validate target design</text>
+            <text class="desc" x="90" y="94">before build</text>
+          </g>
+
+          <g id="n14" class="node pending" data-step="14" transform="translate(560 1430)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Architecture Lock</text>
+            <text class="desc" x="130" y="74">Freeze approved target</text>
+            <text class="desc" x="130" y="94">architecture</text>
+          </g>
+
+          <g id="n14a" class="node pending" data-step="15" transform="translate(960 1310)">
+            <rect width="220" height="80"></rect>
+            <text class="label" x="110" y="34">Target Adapter</text>
+            <text class="label" x="110" y="54">Conventions</text>
+          </g>
+
+          <g id="n15" class="node pending" data-step="15" transform="translate(960 1430)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Generation Engine</text>
+            <text class="desc" x="130" y="74">Generate target services,</text>
+            <text class="desc" x="130" y="94">components, and code</text>
+          </g>
+
+          <g id="n16" class="node pending" data-step="16" transform="translate(1660 1430)">
+            <rect width="220" height="120"></rect>
+            <text class="label" x="110" y="44">Generated Outputs</text>
+            <text class="desc" x="110" y="74">Target code and generation</text>
+            <text class="desc" x="110" y="94">metadata</text>
+          </g>
+
+          <g id="n17" class="node pending" data-step="17" transform="translate(560 1670)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Verification</text>
+            <text class="desc" x="130" y="74">Replay, compare, and</text>
+            <text class="desc" x="130" y="94">classify drift</text>
+          </g>
+
+          <g id="n18" class="node pending" data-step="18" transform="translate(1660 1670)">
+            <rect width="220" height="120"></rect>
+            <text class="label" x="110" y="44">Verification Reports</text>
+            <text class="desc" x="110" y="74">Conformance evidence</text>
+            <text class="desc" x="110" y="94">for release decisions</text>
+          </g>
+
+          <g id="n19" class="node pending" data-step="19" transform="translate(560 1810)">
+            <rect width="260" height="120"></rect>
+            <text class="label" x="130" y="44">Cutover Support</text>
+            <text class="desc" x="130" y="74">Rollout guidance, routing,</text>
+            <text class="desc" x="130" y="94">rollback planning</text>
+          </g>
+
+          <!-- Cross-cutting concerns strip -->
+          <rect class="cross-cut-lane" x="20" y="2040" width="1880" height="220"></rect>
+          <text class="lane-title" x="40" y="2072">Cross-Cutting Concerns</text>
+
+          <g id="ncc1" class="node cross-cut-box pending" data-step="20" transform="translate(40 2088)">
+            <rect width="445" height="150"></rect>
+            <text class="label" x="222" y="36">State Store</text>
+            <text class="desc" x="222" y="62">Checkpoints, status, and recovery state</text>
+            <text class="desc" x="222" y="82">persisted at every stage boundary.</text>
+            <text class="desc" x="222" y="108" style="font-style:italic;fill:#7a5a31">Spans: CLI, all locks, all stages</text>
+          </g>
+
+          <g id="ncc2" class="node cross-cut-box pending" data-step="20" transform="translate(505 2088)">
+            <rect width="445" height="150"></rect>
+            <text class="label" x="222" y="36">Audit Log</text>
+            <text class="desc" x="222" y="62">Tamper-evident record of AI calls,</text>
+            <text class="desc" x="222" y="82">decisions, and provenance.</text>
+            <text class="desc" x="222" y="108" style="font-style:italic;fill:#7a5a31">Spans: Semantics, Generation, Verification</text>
+          </g>
+
+          <g id="ncc3" class="node cross-cut-box pending" data-step="20" transform="translate(970 2088)">
+            <rect width="445" height="150"></rect>
+            <text class="label" x="222" y="36">Invalidation Engine</text>
+            <text class="desc" x="222" y="62">Stale detection and dependency-aware</text>
+            <text class="desc" x="222" y="82">cascade propagation.</text>
+            <text class="desc" x="222" y="108" style="font-style:italic;fill:#7a5a31">Spans: All artifacts and locks</text>
+          </g>
+
+          <g id="ncc4" class="node cross-cut-box pending" data-step="20" transform="translate(1435 2088)">
+            <rect width="445" height="150"></rect>
+            <text class="label" x="222" y="36">Advisory Agents</text>
+            <text class="desc" x="222" y="62">Non-blocking risk, review acceleration,</text>
+            <text class="desc" x="222" y="82">and test proposal helpers.</text>
+            <text class="desc" x="222" y="108" style="font-style:italic;fill:#7a5a31">Spans: Reviews, Verification (optional)</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="side">
+        <div class="step-pill" id="stepPill">Step 0 of 17</div>
+        <h2 id="stepTitle">Control surface</h2>
+        <div class="step-visual" id="stepVisual" aria-hidden="true"></div>
+        <div class="chips" id="stepChips"></div>
+        <p id="stepCopy">The CLI starts, resumes, and inspects the modernization state machine.</p>
+        <div class="detail-grid">
+          <div class="detail-card">
+            <strong>Primary Output</strong>
+            <p id="stepOutput">Operator control over stage execution.</p>
+          </div>
+          <div class="detail-card">
+            <strong>Human / AI Role</strong>
+            <p id="stepRole">Operator-driven execution and inspection.</p>
+          </div>
+          <div class="detail-card">
+            <strong>Why It Matters</strong>
+            <p id="stepWhy">This is how the process is controlled and resumed safely.</p>
+          </div>
+        </div>
+        <ul id="stepPoints"></ul>
+        <div class="progress">
+          <div class="bar"><div class="fill" id="fill"></div></div>
+          <div class="meta">
+            <span id="progressLabel">Ready to present</span>
+            <span>Manual progression</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function visualSvg(type) {
+      const shell = (inner) => `
+        <svg viewBox="0 0 320 148" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="304" height="132" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="22" y="20" width="276" height="108" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          ${inner}
+        </svg>`;
+
+      const node = (x, y, w, h, fill = '#e8f6ea', stroke = '#4b8f60') =>
+        `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+      const arrow = (x1, y1, x2, y2, color = '#c96b15') =>
+        `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${color}" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M${x2-10} ${y2-8} L${x2} ${y2} L${x2-10} ${y2+8}" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+      const visuals = {
+        control: shell(`${node(34,44,94,48,'#fff0d2','#c96b15')}${node(192,44,94,48)}${arrow(128,68,192,68)}<circle cx="56" cy="68" r="6" fill="#c96b15"/><circle cx="76" cy="68" r="6" fill="#c96b15"/><circle cx="96" cy="68" r="6" fill="#c96b15" />`),
+        input: shell(`${node(34,44,106,56,'#fffdf8','#b79b70')}${node(182,44,104,56)}${arrow(140,72,182,72,'#4b8f60')}<path d="M58 60 h58 M58 76 h44" stroke="#b79b70" stroke-width="4" stroke-linecap="round"/>`),
+        parse: shell(`${node(28,36,92,64)}${node(206,36,88,64)}${arrow(120,68,206,68)}<path d="M52 56 h42 M52 72 h32 M52 88 h24" stroke="#4b8f60" stroke-width="4" stroke-linecap="round"/><path d="M226 58 h46 M226 76 h32" stroke="#4b8f60" stroke-width="4" stroke-linecap="round"/>`),
+        semantic: shell(`${node(30,42,96,56)}${node(190,42,102,56,'#fff0d2','#c96b15')}${arrow(126,70,190,70)}<circle cx="78" cy="70" r="16" fill="none" stroke="#4b8f60" stroke-width="4"/><path d="M226 58 h30 M226 74 h40 M226 90 h24" stroke="#c96b15" stroke-width="4" stroke-linecap="round"/>`),
+        review: shell(`${node(34,32,96,46)}${node(34,90,96,30,'#fffdf8','#b79b70')}${node(190,44,94,48,'#fff0d2','#c96b15')}${arrow(130,67,190,67)}<path d="M54 48 h50 M54 62 h38" stroke="#4b8f60" stroke-width="4" stroke-linecap="round"/><path d="M56 104 l10 10 l20 -24" stroke="#b79b70" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`),
+        lock: shell(`${node(34,44,96,48)}${arrow(130,68,188,68)}${node(188,44,98,48,'#fff0d2','#c96b15')}<rect x="220" y="52" width="34" height="24" rx="6" fill="none" stroke="#c96b15" stroke-width="4"/><path d="M228 52 v-8 a9 9 0 0 1 18 0 v8" stroke="#c96b15" stroke-width="4" fill="none"/>`),
+        architecture: shell(`${node(26,34,110,70)}${node(184,34,110,70)}${arrow(136,70,184,70)}<path d="M48 58 h20 M48 74 h54 M48 90 h36 M206 58 h46 M206 74 h28 M206 90 h54" stroke="#4b8f60" stroke-width="4" stroke-linecap="round"/>`),
+        build: shell(`${node(34,42,96,56)}${node(188,42,106,56,'#fff0d2','#c96b15')}${arrow(130,70,188,70)}<path d="M56 56 h24 M56 72 h50 M56 88 h40" stroke="#4b8f60" stroke-width="4" stroke-linecap="round"/><path d="M228 50 l8 14 16 -2 -10 12 8 14 -16 -4 -10 12 -2 -16 -16 -4 14 -8 -2 -16 10 10z" fill="#c96b15"/>`),
+        verify: shell(`${node(34,42,96,56)}${node(188,42,106,56)}${arrow(130,70,188,70)}<circle cx="78" cy="70" r="18" fill="none" stroke="#4b8f60" stroke-width="4"/><path d="M70 70 l6 6 l12 -14" stroke="#4b8f60" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M214 56 h48 M214 74 h34 M214 92 h22" stroke="#4b8f60" stroke-width="4" stroke-linecap="round"/>`),
+        cutover: shell(`${node(34,42,96,56)}${node(188,42,106,56)}${arrow(130,70,188,70)}<path d="M64 88 q18 -34 36 0" stroke="#4b8f60" stroke-width="4" fill="none"/><path d="M214 58 h18 M238 58 h22 M214 78 h48" stroke="#c96b15" stroke-width="4" stroke-linecap="round"/>`),
+        crosscut: shell(`${node(30,72,56,40,'#fff0d2','#c96b15')}${node(96,72,56,40,'#fff0d2','#c96b15')}${node(162,72,56,40,'#fff0d2','#c96b15')}${node(228,72,56,40,'#fff0d2','#c96b15')}<path d="M58 72 V38 M124 72 V38 M190 72 V38 M256 72 V38" stroke="#c96b15" stroke-width="3" stroke-dasharray="6 4" fill="none"/><path d="M30 34 h268" stroke="#b79b70" stroke-width="2" stroke-dasharray="8 4"/>`),
+        estate: `<svg viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="298" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="278" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <!-- folder icon -->
+          <path d="M30 40 h18 l6 -8 h30 v8 h0 v4 H30 z" fill="#c96b15" opacity="0.25" stroke="#c96b15" stroke-width="1.5" rx="3"/>
+          <text x="94" y="44" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700" fill="#1f2933">legacy-app/</text>
+          <!-- tree lines -->
+          <text x="30" y="74" font-family="IBM Plex Mono, monospace" font-size="12" fill="#657180">├── </text><text x="66" y="74" font-family="IBM Plex Mono, monospace" font-size="12" fill="#7a5a31" font-weight="600">templates/</text><text x="226" y="74" font-family="IBM Plex Mono, monospace" font-size="11" fill="#657180">(142 files)</text>
+          <text x="30" y="96" font-family="IBM Plex Mono, monospace" font-size="11" fill="#b79b70">│   ├── order-process.cfm</text>
+          <text x="30" y="114" font-family="IBM Plex Mono, monospace" font-size="11" fill="#b79b70">│   ├── user-login.cfm</text>
+          <text x="30" y="132" font-family="IBM Plex Mono, monospace" font-size="11" fill="#b79b70">│   └── report-export.cfm</text>
+          <text x="30" y="158" font-family="IBM Plex Mono, monospace" font-size="12" fill="#657180">├── </text><text x="66" y="158" font-family="IBM Plex Mono, monospace" font-size="12" fill="#7a5a31" font-weight="600">components/</text><text x="226" y="158" font-family="IBM Plex Mono, monospace" font-size="11" fill="#657180">(38 files)</text>
+          <text x="30" y="180" font-family="IBM Plex Mono, monospace" font-size="12" fill="#657180">├── </text><text x="66" y="180" font-family="IBM Plex Mono, monospace" font-size="12" fill="#7a5a31" font-weight="600">sql/</text><text x="226" y="180" font-family="IBM Plex Mono, monospace" font-size="11" fill="#657180">(67 files)</text>
+          <text x="30" y="202" font-family="IBM Plex Mono, monospace" font-size="12" fill="#657180">├── </text><text x="66" y="202" font-family="IBM Plex Mono, monospace" font-size="12" fill="#7a5a31" font-weight="600">config/</text><text x="226" y="202" font-family="IBM Plex Mono, monospace" font-size="11" fill="#657180">(12 files)</text>
+          <text x="30" y="224" font-family="IBM Plex Mono, monospace" font-size="12" fill="#657180">└── </text><text x="66" y="224" font-family="IBM Plex Mono, monospace" font-size="12" fill="#7a5a31" font-weight="600">scheduled/</text><text x="226" y="224" font-family="IBM Plex Mono, monospace" font-size="11" fill="#657180">(8 files)</text>
+          <!-- separator -->
+          <line x1="28" y1="244" x2="292" y2="244" stroke="#d5c4a6" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <!-- footer -->
+          <text x="160" y="268" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="700" fill="#1f2933" text-anchor="middle">267 files  ·  6 asset types</text>
+          <text x="160" y="288" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#c96b15" text-anchor="middle">Raw input — no processing yet</text>
+        </svg>`,
+        adapters: `<svg viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="298" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="278" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <!-- title -->
+          <text x="160" y="40" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#7a5a31" text-anchor="middle" letter-spacing="0.08em">ADAPTER LIBRARY</text>
+          <!-- ColdFusion adapter — active -->
+          <rect x="28" y="52" width="264" height="78" rx="12" fill="#fff0d2" stroke="#c96b15" stroke-width="2"/>
+          <rect x="36" y="58" width="56" height="18" rx="9" fill="#c96b15"/>
+          <text x="64" y="71" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="white" text-anchor="middle">ACTIVE</text>
+          <text x="100" y="71" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="700" fill="#1f2933">ColdFusion Source Adapter</text>
+          <text x="44" y="92" font-family="IBM Plex Mono, monospace" font-size="10" fill="#8e4f15">parsing rules</text>
+          <text x="132" y="92" font-family="IBM Plex Mono, monospace" font-size="10" fill="#8e4f15">conventions</text>
+          <text x="214" y="92" font-family="IBM Plex Mono, monospace" font-size="10" fill="#8e4f15">discovery</text>
+          <text x="44" y="108" font-family="IBM Plex Mono, monospace" font-size="10" fill="#8e4f15">fact helpers</text>
+          <text x="132" y="108" font-family="IBM Plex Mono, monospace" font-size="10" fill="#8e4f15">agent defs</text>
+          <text x="214" y="108" font-family="IBM Plex Mono, monospace" font-size="10" fill="#8e4f15">schemas</text>
+          <!-- small dots between tags -->
+          <circle cx="122" cy="89" r="1.5" fill="#c96b15"/><circle cx="204" cy="89" r="1.5" fill="#c96b15"/>
+          <circle cx="122" cy="105" r="1.5" fill="#c96b15"/><circle cx="204" cy="105" r="1.5" fill="#c96b15"/>
+          <!-- COBOL adapter — dimmed -->
+          <rect x="28" y="142" width="264" height="56" rx="12" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1.5" opacity="0.5"/>
+          <text x="44" y="168" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="600" fill="#657180">COBOL Source Adapter</text>
+          <text x="220" y="168" font-family="IBM Plex Mono, monospace" font-size="10" fill="#b79b70">v1.2</text>
+          <text x="44" y="184" font-family="IBM Plex Mono, monospace" font-size="10" fill="#b79b70">parsing · conventions · discovery</text>
+          <!-- Legacy Java adapter — dimmed -->
+          <rect x="28" y="208" width="264" height="56" rx="12" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1.5" opacity="0.5"/>
+          <text x="44" y="234" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="600" fill="#657180">Legacy Java Source Adapter</text>
+          <text x="232" y="234" font-family="IBM Plex Mono, monospace" font-size="10" fill="#b79b70">v0.8</text>
+          <text x="44" y="250" font-family="IBM Plex Mono, monospace" font-size="10" fill="#b79b70">parsing · conventions · discovery</text>
+          <!-- footer -->
+          <text x="160" y="286" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">Pluggable per engagement — one active at a time</text>
+        </svg>`,
+        astfacts: `<svg viewBox="0 0 320 340" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="328" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="308" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <!-- Layer 1: Source snippet (top, fading) -->
+          <text x="28" y="38" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">SOURCE</text>
+          <rect x="28" y="44" width="264" height="44" rx="8" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1" opacity="0.7"/>
+          <text x="36" y="60" font-family="IBM Plex Mono, monospace" font-size="9" fill="#b79b70">&lt;cfquery name="getOrders"&gt;</text>
+          <text x="36" y="74" font-family="IBM Plex Mono, monospace" font-size="9" fill="#b79b70">  SELECT * FROM orders WHERE...</text>
+          <!-- fade arrow down -->
+          <path d="M160 92 L160 108" stroke="#c96b15" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M154 104 L160 112 L166 104" fill="none" stroke="#c96b15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Layer 2: AST tree -->
+          <text x="28" y="128" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">AST</text>
+          <rect x="28" y="134" width="264" height="68" rx="8" fill="#e8f6ea" stroke="#4b8f60" stroke-width="1.5"/>
+          <!-- tree nodes -->
+          <rect x="120" y="140" width="80" height="18" rx="9" fill="#4b8f60"/><text x="160" y="153" font-family="IBM Plex Mono, monospace" font-size="9" font-weight="700" fill="white" text-anchor="middle">cfquery</text>
+          <!-- branches -->
+          <path d="M140 158 L80 170" stroke="#4b8f60" stroke-width="1.5"/><path d="M160 158 L160 170" stroke="#4b8f60" stroke-width="1.5"/><path d="M180 158 L240 170" stroke="#4b8f60" stroke-width="1.5"/>
+          <!-- child nodes -->
+          <rect x="44" y="170" width="72" height="16" rx="8" fill="white" stroke="#4b8f60" stroke-width="1.2"/><text x="80" y="181" font-family="IBM Plex Mono, monospace" font-size="8" fill="#4b8f60" text-anchor="middle">SELECT</text>
+          <rect x="124" y="170" width="72" height="16" rx="8" fill="white" stroke="#4b8f60" stroke-width="1.2"/><text x="160" y="181" font-family="IBM Plex Mono, monospace" font-size="8" fill="#4b8f60" text-anchor="middle">WHERE</text>
+          <rect x="204" y="170" width="72" height="16" rx="8" fill="white" stroke="#4b8f60" stroke-width="1.2"/><text x="240" y="181" font-family="IBM Plex Mono, monospace" font-size="8" fill="#4b8f60" text-anchor="middle">name=</text>
+          <text x="282" y="145" font-family="IBM Plex Sans, sans-serif" font-size="8" fill="#4b8f60" text-anchor="end" font-style="italic">deterministic</text>
+          <!-- arrow down -->
+          <path d="M160 206 L160 222" stroke="#c96b15" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M154 218 L160 226 L166 218" fill="none" stroke="#c96b15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Layer 3: Facts -->
+          <text x="28" y="240" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">FACTS</text>
+          <rect x="28" y="246" width="264" height="60" rx="8" fill="#fff0d2" stroke="#c96b15" stroke-width="1.5"/>
+          <!-- fact rows -->
+          <circle cx="42" cy="260" r="4" fill="#c96b15"/><text x="52" y="264" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">reads: orders table</text>
+          <circle cx="42" cy="278" r="4" fill="#c96b15"/><text x="52" y="282" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">filters: status (form input)</text>
+          <circle cx="42" cy="296" r="4" fill="#c96b15"/><text x="52" y="300" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">assigns: getOrders resultset</text>
+          <text x="282" y="252" font-family="IBM Plex Sans, sans-serif" font-size="8" fill="#c96b15" text-anchor="end" font-style="italic">deterministic</text>
+          <!-- footer -->
+          <text x="160" y="326" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#657180" text-anchor="middle">No interpretation — structure and observable behavior only</text>
+        </svg>`,
+        semanticDerive: `<svg viewBox="0 0 320 330" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="318" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="298" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <!-- Left: Facts (input) -->
+          <text x="82" y="36" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#7a5a31" letter-spacing="0.06em" text-anchor="middle">FACTS</text>
+          <rect x="24" y="42" width="116" height="80" rx="8" fill="#fff0d2" stroke="#c96b15" stroke-width="1.5"/>
+          <circle cx="34" cy="58" r="3" fill="#c96b15"/><text x="42" y="62" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">reads: orders</text>
+          <circle cx="34" cy="74" r="3" fill="#c96b15"/><text x="42" y="78" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">filters: status</text>
+          <circle cx="34" cy="90" r="3" fill="#c96b15"/><text x="42" y="94" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">checks: total&gt;500</text>
+          <circle cx="34" cy="106" r="3" fill="#c96b15"/><text x="42" y="110" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">sets: discount=0.15</text>
+          <!-- Arrow with AI sparkle -->
+          <path d="M144 82 L176 82" stroke="#c96b15" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M172 76 L180 82 L172 88" fill="none" stroke="#c96b15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- AI sparkle icon -->
+          <path d="M160 64 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2z" fill="#c96b15" opacity="0.7"/>
+          <text x="160" y="56" font-family="IBM Plex Sans, sans-serif" font-size="8" fill="#c96b15" text-anchor="middle" font-weight="700">AI</text>
+          <!-- Right: Semantic output -->
+          <text x="238" y="36" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#7a5a31" letter-spacing="0.06em" text-anchor="middle">SEMANTICS</text>
+          <rect x="180" y="42" width="116" height="80" rx="8" fill="#e8f6ea" stroke="#4b8f60" stroke-width="1.5"/>
+          <text x="238" y="60" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#1f2933" text-anchor="middle">Bulk Order Discount</text>
+          <rect x="208" y="66" width="60" height="14" rx="7" fill="#4b8f60"/><text x="238" y="76" font-family="IBM Plex Sans, sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">HIGH conf.</text>
+          <text x="190" y="96" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180">evidence: 3 facts</text>
+          <text x="190" y="110" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180">source: ai</text>
+          <!-- Second semantic pair -->
+          <rect x="24" y="138" width="116" height="62" rx="8" fill="#fff0d2" stroke="#c96b15" stroke-width="1.5"/>
+          <circle cx="34" cy="156" r="3" fill="#c96b15"/><text x="42" y="160" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">calls: validateUser</text>
+          <circle cx="34" cy="172" r="3" fill="#c96b15"/><text x="42" y="176" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">checks: session.role</text>
+          <circle cx="34" cy="188" r="3" fill="#c96b15"/><text x="42" y="192" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">redirects: /login</text>
+          <!-- Arrow -->
+          <path d="M144 170 L176 170" stroke="#c96b15" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M172 164 L180 170 L172 176" fill="none" stroke="#c96b15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M160 152 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2z" fill="#c96b15" opacity="0.7"/>
+          <rect x="180" y="138" width="116" height="62" rx="8" fill="#fff7e7" stroke="#b79b70" stroke-width="1.5"/>
+          <text x="238" y="158" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#1f2933" text-anchor="middle">Auth Gate Check</text>
+          <rect x="210" y="164" width="56" height="14" rx="7" fill="#c96b15"/><text x="238" y="174" font-family="IBM Plex Sans, sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">MED conf.</text>
+          <text x="190" y="192" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180">evidence: 2 facts</text>
+          <!-- Third — low confidence with open question -->
+          <rect x="24" y="216" width="116" height="46" rx="8" fill="#fff0d2" stroke="#c96b15" stroke-width="1.5"/>
+          <circle cx="34" cy="234" r="3" fill="#c96b15"/><text x="42" y="238" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">reads: app.taxRate</text>
+          <circle cx="34" cy="250" r="3" fill="#c96b15"/><text x="42" y="254" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">scope: application</text>
+          <path d="M144 240 L176 240" stroke="#c96b15" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M172 234 L180 240 L172 246" fill="none" stroke="#c96b15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M160 222 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2z" fill="#c96b15" opacity="0.7"/>
+          <rect x="180" y="216" width="116" height="46" rx="8" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="238" y="236" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#657180" text-anchor="middle">Tax Config Rule?</text>
+          <rect x="213" y="242" width="50" height="14" rx="7" fill="#b35000"/><text x="238" y="252" font-family="IBM Plex Sans, sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">LOW conf.</text>
+          <!-- footer -->
+          <text x="160" y="284" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">AI interprets — humans have not approved yet</text>
+          <text x="160" y="300" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#657180" text-anchor="middle">Every field tracks source, confidence, and evidence</text>
+        </svg>`,
+        semanticReview: `<svg viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="298" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="278" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <text x="160" y="36" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#7a5a31" letter-spacing="0.06em" text-anchor="middle">HUMAN REVIEW</text>
+          <!-- Card 1: Approved (checkmark) -->
+          <rect x="24" y="44" width="272" height="62" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="44" y="64" font-family="IBM Plex Sans, sans-serif" font-size="12" font-weight="700" fill="#1f2933">Bulk Order Discount</text>
+          <rect x="200" y="52" width="46" height="16" rx="8" fill="#4b8f60"/><text x="223" y="63" font-family="IBM Plex Sans, sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">HIGH</text>
+          <!-- checkmark icon -->
+          <circle cx="268" cy="62" r="14" fill="#4b8f60"/>
+          <path d="M260 62 l5 5 l10 -12" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="44" y="82" font-family="IBM Plex Mono, monospace" font-size="9" fill="#4b8f60">Approved — no changes needed</text>
+          <text x="44" y="96" font-family="IBM Plex Mono, monospace" font-size="8" fill="#657180">reviewer: J. Chen</text>
+          <!-- Card 2: Corrected (edit pencil) -->
+          <rect x="24" y="118" width="272" height="76" rx="10" fill="#fff0d2" stroke="#c96b15" stroke-width="2"/>
+          <text x="44" y="138" font-family="IBM Plex Sans, sans-serif" font-size="12" font-weight="700" fill="#657180" text-decoration="line-through">Auth Gate Check</text>
+          <!-- pencil icon -->
+          <circle cx="268" cy="138" r="14" fill="#c96b15"/>
+          <path d="M262 144 l10 -10 4 4 -10 10 z" fill="white"/><path d="M277 133 l-4 -4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <text x="44" y="156" font-family="IBM Plex Sans, sans-serif" font-size="12" font-weight="700" fill="#1f2933">Role-Based Access Guard</text>
+          <rect x="210" y="148" width="38" height="16" rx="8" fill="#c96b15"/><text x="229" y="159" font-family="IBM Plex Sans, sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">MED</text>
+          <text x="44" y="176" font-family="IBM Plex Mono, monospace" font-size="9" fill="#c96b15">Corrected — renamed + confidence kept</text>
+          <text x="44" y="188" font-family="IBM Plex Mono, monospace" font-size="8" fill="#657180">reviewer: S. Patel</text>
+          <!-- Card 3: Flagged / needs resolution -->
+          <rect x="24" y="206" width="272" height="62" rx="10" fill="#fffdf8" stroke="#b35000" stroke-width="2" stroke-dasharray="6 3"/>
+          <text x="44" y="226" font-family="IBM Plex Sans, sans-serif" font-size="12" font-weight="700" fill="#657180">Tax Config Rule?</text>
+          <rect x="170" y="216" width="46" height="16" rx="8" fill="#b35000"/><text x="193" y="227" font-family="IBM Plex Sans, sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">LOW</text>
+          <!-- flag icon -->
+          <circle cx="268" cy="226" r="14" fill="#b35000"/>
+          <path d="M264 218 v16 M264 218 l10 4 -10 4" fill="white" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+          <text x="44" y="246" font-family="IBM Plex Mono, monospace" font-size="9" fill="#b35000">Flagged — open question, needs resolution</text>
+          <text x="44" y="258" font-family="IBM Plex Mono, monospace" font-size="8" fill="#657180">Is this a per-region override or global config?</text>
+          <!-- footer -->
+          <text x="160" y="288" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">Reviewers correct meaning — not AI prose</text>
+        </svg>`,
+        lockCert: `<svg viewBox="0 0 320 330" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="318" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="298" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <!-- Lock icon top center -->
+          <rect x="140" y="26" width="40" height="28" rx="6" fill="none" stroke="#4b8f60" stroke-width="3"/>
+          <path d="M148 26 v-10 a12 12 0 0 1 24 0 v10" stroke="#4b8f60" stroke-width="3" fill="none"/>
+          <circle cx="160" cy="40" r="4" fill="#4b8f60"/>
+          <!-- Title -->
+          <text x="160" y="74" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="700" fill="#1f2933" text-anchor="middle">SEMANTIC LOCK</text>
+          <text x="160" y="88" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#4b8f60" text-anchor="middle">Immutable — approved understanding frozen</text>
+          <!-- Separator -->
+          <line x1="40" y1="98" x2="280" y2="98" stroke="#d5c4a6" stroke-width="1"/>
+          <!-- Hash -->
+          <text x="40" y="118" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">LOCK HASH</text>
+          <rect x="40" y="122" width="240" height="20" rx="4" fill="#e8f6ea" stroke="#4b8f60" stroke-width="1"/>
+          <text x="160" y="136" font-family="IBM Plex Mono, monospace" font-size="9" fill="#4b8f60" text-anchor="middle">sha256:a3f8c1…e7b204</text>
+          <!-- Included artifacts -->
+          <text x="40" y="162" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">INCLUDED ARTIFACTS</text>
+          <rect x="40" y="168" width="240" height="56" rx="6" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1"/>
+          <circle cx="52" cy="182" r="3" fill="#4b8f60"/><text x="60" y="186" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">order-process.sem.json</text><text x="268" y="186" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180" text-anchor="end">b7e2…</text>
+          <circle cx="52" cy="198" r="3" fill="#4b8f60"/><text x="60" y="202" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">user-login.sem.json</text><text x="268" y="202" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180" text-anchor="end">4f1a…</text>
+          <circle cx="52" cy="214" r="3" fill="#4b8f60"/><text x="60" y="218" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">report-export.sem.json</text><text x="268" y="218" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180" text-anchor="end">91dc…</text>
+          <!-- Provenance -->
+          <text x="40" y="244" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">PROVENANCE</text>
+          <rect x="40" y="250" width="240" height="44" rx="6" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1"/>
+          <text x="52" y="266" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">schema: v2.1  ·  adapter: cfml-source@1.4</text>
+          <text x="52" y="282" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">reviewers: Koustubh</text>
+          <text x="52" y="296" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#657180">approved: 2026-03-28T14:22Z</text>
+          <!-- footer -->
+          <text x="160" y="322" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#4b8f60" text-anchor="middle">Downstream stages consume this — not drafts</text>
+        </svg>`,
+        srcArch: `<svg viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="298" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="278" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <text x="160" y="36" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#7a5a31" letter-spacing="0.06em" text-anchor="middle">SOURCE ARCHITECTURE — AS-IS SYSTEM</text>
+          <!-- Module nodes -->
+          <!-- Orders (top center) -->
+          <rect x="118" y="48" width="84" height="36" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="160" y="71" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#1f2933" text-anchor="middle">Orders</text>
+          <!-- Auth (left) -->
+          <rect x="28" y="110" width="76" height="36" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="66" y="133" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#1f2933" text-anchor="middle">Auth</text>
+          <!-- Inventory (right) -->
+          <rect x="216" y="110" width="80" height="36" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="256" y="133" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#1f2933" text-anchor="middle">Inventory</text>
+          <!-- Reports (center-right) -->
+          <rect x="148" y="110" width="56" height="36" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="176" y="133" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#1f2933" text-anchor="middle">Reports</text>
+          <!-- Shared DB (bottom center) — hotspot -->
+          <rect x="100" y="182" width="120" height="40" rx="10" fill="#fff0d2" stroke="#b35000" stroke-width="2.5"/>
+          <text x="160" y="207" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#b35000" text-anchor="middle">Shared DB</text>
+          <!-- Hotspot badge -->
+          <rect x="194" y="174" width="52" height="16" rx="8" fill="#b35000"/>
+          <text x="220" y="185" font-family="IBM Plex Sans, sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">HOTSPOT</text>
+          <!-- Edges: normal dependencies (green) -->
+          <path d="M140 84 L80 110" stroke="#4b8f60" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M180 84 L176 110" stroke="#4b8f60" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M185 80 L230 110" stroke="#4b8f60" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- Edges: tight coupling (orange/red) -->
+          <path d="M160 84 L160 182" stroke="#c96b15" stroke-width="3" fill="none" stroke-dasharray="6 3" stroke-linecap="round"/>
+          <path d="M66 146 L130 182" stroke="#c96b15" stroke-width="3" fill="none" stroke-dasharray="6 3" stroke-linecap="round"/>
+          <path d="M176 146 L160 182" stroke="#c96b15" stroke-width="3" fill="none" stroke-dasharray="6 3" stroke-linecap="round"/>
+          <path d="M256 146 L190 182" stroke="#c96b15" stroke-width="3" fill="none" stroke-dasharray="6 3" stroke-linecap="round"/>
+          <!-- Legend -->
+          <line x1="30" y1="244" x2="50" y2="244" stroke="#4b8f60" stroke-width="2" stroke-linecap="round"/>
+          <text x="56" y="248" font-family="IBM Plex Sans, sans-serif" font-size="9" fill="#657180">dependency</text>
+          <line x1="130" y1="244" x2="150" y2="244" stroke="#c96b15" stroke-width="3" stroke-dasharray="6 3" stroke-linecap="round"/>
+          <text x="156" y="248" font-family="IBM Plex Sans, sans-serif" font-size="9" fill="#657180">tight coupling</text>
+          <rect x="248" y="237" width="36" height="14" rx="7" fill="#b35000"/><text x="266" y="248" font-family="IBM Plex Sans, sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">risk</text>
+          <!-- footer -->
+          <text x="160" y="276" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">Graph-shaped model of the current system</text>
+          <text x="160" y="292" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#657180" text-anchor="middle">Derived from locked semantics — not source re-reading</text>
+        </svg>`,
+        srcArchReview: `<svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="308" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="288" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <text x="160" y="36" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#7a5a31" letter-spacing="0.06em" text-anchor="middle">ARCHITECTURE REVIEW — STAKEHOLDER VALIDATION</text>
+          <!-- Module nodes (same layout as srcArch) -->
+          <!-- Orders — approved checkmark -->
+          <rect x="118" y="48" width="84" height="36" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="160" y="71" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#1f2933" text-anchor="middle">Orders</text>
+          <circle cx="194" cy="52" r="10" fill="#4b8f60"/><path d="M189 52 l3 3 l6 -7" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Auth — approved -->
+          <rect x="28" y="110" width="76" height="36" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="66" y="133" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#1f2933" text-anchor="middle">Auth</text>
+          <circle cx="96" cy="114" r="10" fill="#4b8f60"/><path d="M91 114 l3 3 l6 -7" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Inventory — approved -->
+          <rect x="216" y="110" width="80" height="36" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="256" y="133" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#1f2933" text-anchor="middle">Inventory</text>
+          <circle cx="288" cy="114" r="10" fill="#4b8f60"/><path d="M283 114 l3 3 l6 -7" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Reports — corrected boundary -->
+          <rect x="130" y="110" width="74" height="36" rx="10" fill="#fff0d2" stroke="#c96b15" stroke-width="2"/>
+          <text x="167" y="133" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#1f2933" text-anchor="middle">Reports</text>
+          <circle cx="196" cy="114" r="10" fill="#c96b15"/><path d="M190 120 l10 -10 3 3 -10 10 z" fill="white"/><path d="M203 113 l-3 -3" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Correction annotation -->
+          <rect x="42" y="156" width="180" height="22" rx="6" fill="#fff0d2" stroke="#c96b15" stroke-width="1"/>
+          <text x="52" y="171" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#c96b15">→ Move to Back-office cluster</text>
+          <!-- Shared DB — hotspot confirmed with question -->
+          <rect x="100" y="190" width="120" height="40" rx="10" fill="#fff0d2" stroke="#b35000" stroke-width="2.5"/>
+          <text x="160" y="215" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#b35000" text-anchor="middle">Shared DB</text>
+          <rect x="194" y="182" width="52" height="16" rx="8" fill="#b35000"/><text x="220" y="193" font-family="IBM Plex Sans, sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">HOTSPOT</text>
+          <!-- Question annotation on Shared DB -->
+          <circle cx="108" cy="194" r="10" fill="#b35000"/><text x="108" y="199" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="700" fill="white" text-anchor="middle">?</text>
+          <rect x="56" y="236" width="208" height="22" rx="6" fill="#fffdf8" stroke="#b35000" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="66" y="251" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#b35000">Split session tables from domain data?</text>
+          <!-- Edges (same coupling lines, dimmed as context) -->
+          <path d="M160 84 L160 190" stroke="#c96b15" stroke-width="2" fill="none" stroke-dasharray="6 3" stroke-linecap="round" opacity="0.4"/>
+          <path d="M66 146 L130 190" stroke="#c96b15" stroke-width="2" fill="none" stroke-dasharray="6 3" stroke-linecap="round" opacity="0.4"/>
+          <path d="M167 146 L160 190" stroke="#c96b15" stroke-width="2" fill="none" stroke-dasharray="6 3" stroke-linecap="round" opacity="0.4"/>
+          <path d="M256 146 L190 190" stroke="#c96b15" stroke-width="2" fill="none" stroke-dasharray="6 3" stroke-linecap="round" opacity="0.4"/>
+          <!-- footer -->
+          <text x="160" y="278" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">Stakeholders validate before target design</text>
+          <text x="160" y="294" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#657180" text-anchor="middle">Corrections and open questions are structured records</text>
+        </svg>`,
+        srcArchLock: `<svg viewBox="0 0 320 330" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="318" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="298" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <!-- Lock icon -->
+          <rect x="140" y="26" width="40" height="28" rx="6" fill="none" stroke="#4b8f60" stroke-width="3"/>
+          <path d="M148 26 v-10 a12 12 0 0 1 24 0 v10" stroke="#4b8f60" stroke-width="3" fill="none"/>
+          <circle cx="160" cy="40" r="4" fill="#4b8f60"/>
+          <!-- Title -->
+          <text x="160" y="74" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="700" fill="#1f2933" text-anchor="middle">SOURCE ARCHITECTURE LOCK</text>
+          <text x="160" y="88" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#4b8f60" text-anchor="middle">Immutable — approved as-is baseline frozen</text>
+          <!-- Separator -->
+          <line x1="40" y1="98" x2="280" y2="98" stroke="#d5c4a6" stroke-width="1"/>
+          <!-- Hash -->
+          <text x="40" y="118" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">LOCK HASH</text>
+          <rect x="40" y="122" width="240" height="20" rx="4" fill="#e8f6ea" stroke="#4b8f60" stroke-width="1"/>
+          <text x="160" y="136" font-family="IBM Plex Mono, monospace" font-size="9" fill="#4b8f60" text-anchor="middle">sha256:d4c7a2…f19e83</text>
+          <!-- Included artifacts -->
+          <text x="40" y="162" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">INCLUDED ARTIFACTS</text>
+          <rect x="40" y="168" width="240" height="56" rx="6" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1"/>
+          <circle cx="52" cy="182" r="3" fill="#4b8f60"/><text x="60" y="186" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">source-architecture.json</text><text x="268" y="186" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180" text-anchor="end">e3b1…</text>
+          <circle cx="52" cy="198" r="3" fill="#4b8f60"/><text x="60" y="202" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">module-graph.json</text><text x="268" y="202" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180" text-anchor="end">7ca9…</text>
+          <circle cx="52" cy="214" r="3" fill="#4b8f60"/><text x="60" y="218" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">correction-records.json</text><text x="268" y="218" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180" text-anchor="end">05af…</text>
+          <!-- Provenance -->
+          <text x="40" y="244" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">PROVENANCE</text>
+          <rect x="40" y="250" width="240" height="44" rx="6" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1"/>
+          <text x="52" y="266" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">schema: v1.3  ·  semantic-lock: a3f8c1…</text>
+          <text x="52" y="282" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">reviewer: Koustubh</text>
+          <text x="52" y="296" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#657180">approved: 2026-04-01T09:15Z</text>
+          <!-- footer -->
+          <text x="160" y="322" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#4b8f60" text-anchor="middle">Target design consumes this — not the draft model</text>
+        </svg>`,
+        targetStack: `<svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="308" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="288" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <!-- File tab -->
+          <rect x="28" y="24" width="160" height="22" rx="6" fill="#c96b15" opacity="0.15"/>
+          <text x="38" y="39" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="700" fill="#c96b15">target-stack.yaml</text>
+          <!-- YAML content -->
+          <rect x="28" y="50" width="264" height="234" rx="8" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1.5"/>
+          <!-- backend -->
+          <text x="40" y="72" font-family="IBM Plex Mono, monospace" font-size="10" fill="#7a5a31" font-weight="700">backend:</text>
+          <text x="112" y="72" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">Go</text>
+          <!-- frontend -->
+          <text x="40" y="92" font-family="IBM Plex Mono, monospace" font-size="10" fill="#7a5a31" font-weight="700">frontend:</text>
+          <text x="118" y="92" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">React</text>
+          <!-- arch style -->
+          <text x="40" y="112" font-family="IBM Plex Mono, monospace" font-size="10" fill="#7a5a31" font-weight="700">arch-style:</text>
+          <text x="132" y="112" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">modular monolith</text>
+          <!-- deployment -->
+          <text x="40" y="132" font-family="IBM Plex Mono, monospace" font-size="10" fill="#7a5a31" font-weight="700">deployment:</text>
+          <text x="132" y="132" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">single deployable</text>
+          <!-- separator -->
+          <line x1="40" y1="144" x2="280" y2="144" stroke="#d5c4a6" stroke-width="1" stroke-dasharray="4 3"/>
+          <!-- constraints -->
+          <text x="40" y="164" font-family="IBM Plex Mono, monospace" font-size="10" fill="#7a5a31" font-weight="700">constraints:</text>
+          <text x="50" y="184" font-family="IBM Plex Mono, monospace" font-size="10" fill="#657180">-</text><text x="62" y="184" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">no external message bus</text>
+          <text x="50" y="204" font-family="IBM Plex Mono, monospace" font-size="10" fill="#657180">-</text><text x="62" y="204" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">must support Oracle DB</text>
+          <text x="50" y="224" font-family="IBM Plex Mono, monospace" font-size="10" fill="#657180">-</text><text x="62" y="224" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">stateless request handling</text>
+          <!-- migration constraints -->
+          <text x="40" y="248" font-family="IBM Plex Mono, monospace" font-size="10" fill="#7a5a31" font-weight="700">migration:</text>
+          <text x="50" y="268" font-family="IBM Plex Mono, monospace" font-size="10" fill="#657180">-</text><text x="62" y="268" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">phased rollout by module</text>
+          <text x="50" y="278" font-family="IBM Plex Mono, monospace" font-size="10" fill="#657180">-</text><text x="62" y="278" font-family="IBM Plex Mono, monospace" font-size="10" fill="#1f2933">dual-run period required</text>
+          <!-- footer -->
+          <text x="160" y="302" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">Human decision input — not a generated document</text>
+        </svg>`,
+        targetArch: `<svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="308" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="288" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <text x="160" y="36" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#7a5a31" letter-spacing="0.06em" text-anchor="middle">TARGET ARCHITECTURE — TO-BE SYSTEM</text>
+          <!-- Stack badge -->
+          <rect x="228" y="24" width="60" height="16" rx="8" fill="#4b8f60"/><text x="258" y="35" font-family="IBM Plex Sans, sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">Go + React</text>
+          <!-- Service nodes -->
+          <!-- Order Service (top left) -->
+          <rect x="28" y="50" width="120" height="50" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="88" y="72" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#1f2933" text-anchor="middle">Order Service</text>
+          <text x="88" y="90" font-family="IBM Plex Mono, monospace" font-size="8" fill="#4b8f60" text-anchor="middle">orders-db</text>
+          <!-- Auth Service (top right) -->
+          <rect x="172" y="50" width="120" height="50" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="232" y="72" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#1f2933" text-anchor="middle">Auth Service</text>
+          <text x="232" y="90" font-family="IBM Plex Mono, monospace" font-size="8" fill="#4b8f60" text-anchor="middle">auth-db</text>
+          <!-- Report Service (bottom left) -->
+          <rect x="28" y="118" width="120" height="50" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="88" y="140" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#1f2933" text-anchor="middle">Report Service</text>
+          <text x="88" y="158" font-family="IBM Plex Mono, monospace" font-size="8" fill="#4b8f60" text-anchor="middle">read-replica</text>
+          <!-- Inventory Service (bottom right) -->
+          <rect x="172" y="118" width="120" height="50" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="232" y="140" font-family="IBM Plex Sans, sans-serif" font-size="11" font-weight="700" fill="#1f2933" text-anchor="middle">Inventory Svc</text>
+          <text x="232" y="158" font-family="IBM Plex Mono, monospace" font-size="8" fill="#4b8f60" text-anchor="middle">inventory-db</text>
+          <!-- API boundary lines (clean, structured) -->
+          <path d="M148 75 L172 75" stroke="#4b8f60" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <text x="160" y="70" font-family="IBM Plex Sans, sans-serif" font-size="7" fill="#4b8f60" text-anchor="middle">API</text>
+          <path d="M88 100 L88 118" stroke="#4b8f60" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <text x="98" y="112" font-family="IBM Plex Sans, sans-serif" font-size="7" fill="#4b8f60">API</text>
+          <path d="M232 100 L232 118" stroke="#4b8f60" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <text x="242" y="112" font-family="IBM Plex Sans, sans-serif" font-size="7" fill="#4b8f60">API</text>
+          <path d="M148 143 L172 143" stroke="#4b8f60" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <text x="160" y="138" font-family="IBM Plex Sans, sans-serif" font-size="7" fill="#4b8f60" text-anchor="middle">API</text>
+          <!-- Migration mapping section -->
+          <line x1="28" y1="182" x2="292" y2="182" stroke="#d5c4a6" stroke-width="1"/>
+          <text x="40" y="200" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">MIGRATION MAPPING</text>
+          <rect x="28" y="206" width="264" height="68" rx="8" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1"/>
+          <!-- mapping rows -->
+          <text x="40" y="224" font-family="IBM Plex Mono, monospace" font-size="9" fill="#657180">Orders module</text>
+          <text x="150" y="224" font-family="IBM Plex Mono, monospace" font-size="9" fill="#c96b15">→</text>
+          <text x="164" y="224" font-family="IBM Plex Mono, monospace" font-size="9" fill="#1f2933">Order Service</text>
+          <text x="40" y="242" font-family="IBM Plex Mono, monospace" font-size="9" fill="#657180">Auth module</text>
+          <text x="150" y="242" font-family="IBM Plex Mono, monospace" font-size="9" fill="#c96b15">→</text>
+          <text x="164" y="242" font-family="IBM Plex Mono, monospace" font-size="9" fill="#1f2933">Auth Service</text>
+          <text x="40" y="260" font-family="IBM Plex Mono, monospace" font-size="9" fill="#657180">Shared DB</text>
+          <text x="150" y="260" font-family="IBM Plex Mono, monospace" font-size="9" fill="#c96b15">→</text>
+          <text x="164" y="260" font-family="IBM Plex Mono, monospace" font-size="9" fill="#1f2933">per-service data stores</text>
+          <!-- footer -->
+          <text x="160" y="294" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">Proposed from locked inputs — not improvised</text>
+        </svg>`,
+        targetArchReview: `<svg viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="298" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="278" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <text x="160" y="36" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#7a5a31" letter-spacing="0.06em" text-anchor="middle">TARGET ARCHITECTURE REVIEW</text>
+          <!-- Order Service — approved -->
+          <rect x="28" y="48" width="120" height="44" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="88" y="70" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#1f2933" text-anchor="middle">Order Service</text>
+          <text x="88" y="84" font-family="IBM Plex Mono, monospace" font-size="8" fill="#4b8f60" text-anchor="middle">orders-db</text>
+          <circle cx="140" cy="52" r="10" fill="#4b8f60"/><path d="M135 52 l3 3 l6 -7" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Auth Service — approved -->
+          <rect x="172" y="48" width="120" height="44" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="232" y="70" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#1f2933" text-anchor="middle">Auth Service</text>
+          <text x="232" y="84" font-family="IBM Plex Mono, monospace" font-size="8" fill="#4b8f60" text-anchor="middle">auth-db</text>
+          <circle cx="284" cy="52" r="10" fill="#4b8f60"/><path d="M279 52 l3 3 l6 -7" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Report Service — corrected -->
+          <rect x="28" y="108" width="120" height="44" rx="10" fill="#fff0d2" stroke="#c96b15" stroke-width="2"/>
+          <text x="88" y="128" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#657180" text-anchor="middle" text-decoration="line-through">Report Service</text>
+          <text x="88" y="144" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#1f2933" text-anchor="middle">Analytics Service</text>
+          <circle cx="140" cy="112" r="10" fill="#c96b15"/><path d="M134 118 l10 -10 3 3 -10 10 z" fill="white"/><path d="M147 111 l-3 -3" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Correction annotation -->
+          <rect x="28" y="160" width="186" height="20" rx="6" fill="#fff0d2" stroke="#c96b15" stroke-width="1"/>
+          <text x="38" y="174" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#c96b15">→ Broader scope than just reports</text>
+          <!-- Inventory Service — question on API -->
+          <rect x="172" y="108" width="120" height="44" rx="10" fill="#e8f6ea" stroke="#4b8f60" stroke-width="2"/>
+          <text x="232" y="130" font-family="IBM Plex Sans, sans-serif" font-size="10" font-weight="700" fill="#1f2933" text-anchor="middle">Inventory Svc</text>
+          <text x="232" y="144" font-family="IBM Plex Mono, monospace" font-size="8" fill="#4b8f60" text-anchor="middle">inventory-db</text>
+          <circle cx="284" cy="112" r="10" fill="#4b8f60"/><path d="M279 112 l3 3 l6 -7" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- API between Order and Inventory — flagged -->
+          <path d="M232 100 L232 108" stroke="#b35000" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="4 3"/>
+          <circle cx="250" cy="100" r="10" fill="#b35000"/><text x="250" y="105" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="700" fill="white" text-anchor="middle">?</text>
+          <rect x="172" y="160" width="120" height="20" rx="6" fill="#fffdf8" stroke="#b35000" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="182" y="174" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#b35000">Sync or async API?</text>
+          <!-- Summary section -->
+          <line x1="28" y1="192" x2="292" y2="192" stroke="#d5c4a6" stroke-width="1"/>
+          <text x="40" y="210" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">REVIEW STATUS</text>
+          <rect x="28" y="216" width="264" height="52" rx="8" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1"/>
+          <circle cx="42" cy="232" r="5" fill="#4b8f60"/><text x="52" y="236" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#1f2933">3 services approved</text>
+          <circle cx="42" cy="250" r="5" fill="#c96b15"/><text x="52" y="254" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#1f2933">1 correction  ·  1 open question</text>
+          <!-- footer -->
+          <text x="160" y="288" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">Team validates to-be design before build begins</text>
+        </svg>`,
+        archLock: `<svg viewBox="0 0 320 330" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="308" height="318" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
+          <rect x="16" y="16" width="288" height="298" rx="14" fill="#fff7e7" stroke="#ead5b2" />
+          <!-- Lock icon -->
+          <rect x="140" y="26" width="40" height="28" rx="6" fill="none" stroke="#4b8f60" stroke-width="3"/>
+          <path d="M148 26 v-10 a12 12 0 0 1 24 0 v10" stroke="#4b8f60" stroke-width="3" fill="none"/>
+          <circle cx="160" cy="40" r="4" fill="#4b8f60"/>
+          <!-- Title -->
+          <text x="160" y="74" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="700" fill="#1f2933" text-anchor="middle">ARCHITECTURE LOCK</text>
+          <text x="160" y="88" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#4b8f60" text-anchor="middle">Immutable — approved target design frozen</text>
+          <line x1="40" y1="98" x2="280" y2="98" stroke="#d5c4a6" stroke-width="1"/>
+          <!-- Hash -->
+          <text x="40" y="118" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">LOCK HASH</text>
+          <rect x="40" y="122" width="240" height="20" rx="4" fill="#e8f6ea" stroke="#4b8f60" stroke-width="1"/>
+          <text x="160" y="136" font-family="IBM Plex Mono, monospace" font-size="9" fill="#4b8f60" text-anchor="middle">sha256:8b2e71…c4a0f6</text>
+          <!-- Included artifacts -->
+          <text x="40" y="162" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">INCLUDED ARTIFACTS</text>
+          <rect x="40" y="168" width="240" height="72" rx="6" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1"/>
+          <circle cx="52" cy="182" r="3" fill="#4b8f60"/><text x="60" y="186" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">target-architecture.json</text><text x="268" y="186" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180" text-anchor="end">f2a7…</text>
+          <circle cx="52" cy="198" r="3" fill="#4b8f60"/><text x="60" y="202" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">service-boundaries.json</text><text x="268" y="202" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180" text-anchor="end">b81c…</text>
+          <circle cx="52" cy="214" r="3" fill="#4b8f60"/><text x="60" y="218" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">api-contracts.json</text><text x="268" y="218" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180" text-anchor="end">3e09…</text>
+          <circle cx="52" cy="230" r="3" fill="#4b8f60"/><text x="60" y="234" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">migration-mappings.json</text><text x="268" y="234" font-family="IBM Plex Mono, monospace" font-size="7.5" fill="#657180" text-anchor="end">6d4f…</text>
+          <!-- Provenance -->
+          <text x="40" y="260" font-family="IBM Plex Sans, sans-serif" font-size="9" font-weight="700" fill="#7a5a31" letter-spacing="0.06em">PROVENANCE</text>
+          <rect x="40" y="266" width="240" height="36" rx="6" fill="#fffdf8" stroke="#d5c4a6" stroke-width="1"/>
+          <text x="52" y="282" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">src-arch-lock: d4c7a2…  ·  stack: Go+React</text>
+          <text x="52" y="296" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#1f2933">reviewer: Koustubh</text><text x="268" y="296" font-family="IBM Plex Mono, monospace" font-size="8.5" fill="#657180" text-anchor="end">2026-04-02</text>
+          <!-- footer -->
+          <text x="160" y="322" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#4b8f60" text-anchor="middle">Generation must obey this blueprint</text>
+        </svg>`
+      };
+
+      return visuals[type] || visuals.control;
+    }
+
+    const steps = [
+      { title: "Control surface", copy: "The CLI is the operator-facing entrypoint into the modernization engine.", points: ["It controls runs, retries, and inspection.", "It is not the data source."], nodes: ["n0"], edges: [], visual: "control", output: "Run control, recovery, and inspection commands.", role: "Operator-driven execution and state management.", why: "Keeps the process resumable and governable.", chips: ["Control", "Operator"] },
+      { title: "Source + config discovery", copy: "The flow starts by inventorying source files, config, and environment inputs.", points: ["This identifies what must be understood, migrated, or preserved.", "It makes config and runtime assumptions explicit up front."], nodes: ["n0","n1"], edges: [], visual: "input", output: "Source and config inventory.", role: "The system discovers files, config, and environment inputs deterministically.", why: "The canonical design treats discovery as a real input stage, not background setup.", chips: ["Discovery", "Config"] },
+      { title: "Legacy system input", copy: "", points: [], nodes: ["n0","n1","n2"], edges: ["e1"], visual: "estate", output: "", role: "", why: "", chips: ["Input", "As-Is Estate"] },
+      { title: "Source adapters", copy: "", points: [], nodes: ["n0","n1","n2","n3"], edges: ["e1","e2"], visual: "adapters", output: "", role: "", why: "", chips: ["Deterministic", "Source-Side"] },
+      { title: "AST and facts", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4"], edges: ["e1","e2","e3"], visual: "astfacts", output: "", role: "", why: "", chips: ["AST", "Facts"] },
+      { title: "Semantic derivation", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5"], edges: ["e1","e2","e3","e4"], visual: "semanticDerive", output: "", role: "", why: "", chips: ["AI-Assisted", "Semantics"] },
+      { title: "Semantic review", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6"], edges: ["e1","e2","e3","e4","e5"], visual: "semanticReview", output: "", role: "", why: "", chips: ["Approval Gate", "Semantic Review"] },
+      { title: "Semantic lock", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7"], edges: ["e1","e2","e3","e4","e5","e6"], visual: "lockCert", output: "", role: "", why: "", chips: ["Locked", "Governed"] },
+      { title: "Source architecture", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8"], edges: ["e1","e2","e3","e4","e5","e6","e7"], visual: "srcArch", output: "", role: "", why: "", chips: ["As-Is", "Architecture"] },
+      { title: "Source architecture review", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8"], visual: "srcArchReview", output: "", role: "", why: "", chips: ["Baseline Review", "Architecture"] },
+      { title: "Source architecture lock", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9"], visual: "srcArchLock", output: "", role: "", why: "", chips: ["Locked", "As-Is Baseline"] },
+      { title: "Target stack choice", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10"], visual: "targetStack", output: "", role: "", why: "", chips: ["Target Stack", "Human Choice"] },
+      { title: "Target architecture", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11","n12"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10","e11"], visual: "targetArch", output: "", role: "", why: "", chips: ["To-Be", "Design"] },
+      { title: "Architecture review", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11","n12","n13"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10","e11","e12"], visual: "targetArchReview", output: "", role: "", why: "", chips: ["Approval Gate", "Target Design"] },
+      { title: "Architecture lock", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11","n12","n13","n14"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10","e11","e12","e13"], visual: "archLock", output: "", role: "", why: "", chips: ["Locked", "Blueprint"] },
+      { title: "Generation", copy: "The generation engine builds the target system from locked inputs.", points: ["Generation follows approved architecture.", "Target adapters shape implementation details."], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11","n12","n13","n14","n14a","n15"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10","e11","e12","e13","e13a","e14"], visual: "build", output: "Generated target services, components, and code.", role: "The framework generates implementation from locked artifacts and adapters.", why: "This is where design becomes working target-system code.", chips: ["Generation", "Adapters"] },
+      { title: "Generated outputs", copy: "The framework emits generated application code and metadata.", points: ["These are outputs of the framework, not the framework itself.", "Metadata supports later review and regeneration."], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11","n12","n13","n14","n14a","n15","n16"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10","e11","e12","e13","e13a","e14","e15"], visual: "build", output: "Target codebase plus generation metadata.", role: "The system writes generated artifacts for teams to review and verify.", why: "This separates framework behavior from generated application output.", chips: ["Code Output", "Metadata"] },
+      { title: "Verification", copy: "Verification checks the generated system against locked expectations.", points: ["This is where behavioral conformance is tested.", "It is tied to approved semantics and architecture."], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11","n12","n13","n14","n14a","n15","n16","n17"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10","e11","e12","e13","e13a","e14","e15","e16"], visual: "verify", output: "Conformance results and drift classification.", role: "Automated verification compares generated behavior to approved expectations.", why: "This is where you decide whether the migration is trustworthy enough to ship.", chips: ["Verification", "Conformance"] },
+      { title: "Verification reports", copy: "Verification produces evidence for release and cutover decisions.", points: ["This becomes the go/no-go review surface.", "It is the operational output of verification."], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11","n12","n13","n14","n14a","n15","n16","n17","n18"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10","e11","e12","e13","e13a","e14","e15","e16","e17"], visual: "verify", output: "Release-facing evidence and decision support.", role: "Teams use the report to judge readiness and risk.", why: "Verification is only useful if it ends in actionable evidence.", chips: ["Evidence", "Release Gate"] },
+      { title: "Cutover support", copy: "The flow ends with controlled cutover support rather than pretending the framework owns production cutover completely.", points: ["Cutover planning is supported, not fully automated.", "This is where rollout, routing, and rollback guidance matter."], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11","n12","n13","n14","n14a","n15","n16","n17","n18","n19"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10","e11","e12","e13","e13a","e14","e15","e16","e17"], activeEdge: null, visual: "cutover", output: "Rollout guidance, routing advice, and rollback planning.", role: "Human teams execute cutover using framework support, not full automation.", why: "Production cutover is engagement-specific and must stay controlled.", chips: ["Rollout", "Operational"] },
+      { title: "Cross-cutting concerns", copy: "Four infrastructure concerns span the entire pipeline rather than belonging to any single stage.", points: ["State Store persists checkpoints, status, and recovery state at every stage boundary.", "Audit Log maintains a tamper-evident record of all AI interactions, decisions, and provenance.", "Invalidation Engine detects staleness and propagates dependency-aware cascades when upstream inputs change.", "Advisory Agents provide optional, non-blocking risk analysis, review acceleration, and test proposals."], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11","n12","n13","n14","n14a","n15","n16","n17","n18","n19","ncc1","ncc2","ncc3","ncc4"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10","e11","e12","e13","e13a","e14","e15","e16","e17"], activeEdge: null, visual: "crosscut", output: "Persistent state, audit trail, incremental recomputation, and optional advisory support.", role: "Infrastructure concerns that enable the pipeline to be resumable, auditable, incremental, and AI-enhanced.", why: "Without these, the pipeline would lack recoverability, trust evidence, change efficiency, and review acceleration.", chips: ["State", "Audit", "Invalidation", "Advisory"] }
+    ];
+
+    const nodeIds = Array.from(document.querySelectorAll('.node')).map(el => el.id);
+    const edgeIds = Array.from(document.querySelectorAll('.edge')).map(el => el.id);
+    const pill = document.getElementById('stepPill');
+    const title = document.getElementById('stepTitle');
+    const copy = document.getElementById('stepCopy');
+    const chips = document.getElementById('stepChips');
+    const visual = document.getElementById('stepVisual');
+    const output = document.getElementById('stepOutput');
+    const role = document.getElementById('stepRole');
+    const why = document.getElementById('stepWhy');
+    const points = document.getElementById('stepPoints');
+    const fill = document.getElementById('fill');
+    const progressLabel = document.getElementById('progressLabel');
+    let current = 0;
+
+    function setMarker(edge, kind) {
+      if (kind === 'active') edge.setAttribute('marker-end', 'url(#arrowActive)');
+      else if (kind === 'done') edge.setAttribute('marker-end', 'url(#arrowDone)');
+      else edge.setAttribute('marker-end', 'url(#arrowDefault)');
+    }
+
+    function render() {
+      const step = steps[current];
+      const total = steps.length - 1;
+      pill.textContent = `Step ${current} of ${total}`;
+      title.textContent = step.title;
+      copy.textContent = step.copy;
+      visual.innerHTML = visualSvg(step.visual);
+      chips.innerHTML = '';
+      (step.chips || []).forEach(label => {
+        const span = document.createElement('span');
+        span.className = 'chip';
+        span.textContent = label;
+        chips.appendChild(span);
+      });
+      output.textContent = step.output || '';
+      role.textContent = step.role || '';
+      why.textContent = step.why || '';
+      points.innerHTML = '';
+      step.points.forEach(p => {
+        const li = document.createElement('li');
+        li.textContent = p;
+        points.appendChild(li);
+      });
+      copy.style.display = step.copy ? '' : 'none';
+      document.querySelector('.detail-grid').style.display = (step.output || step.role || step.why) ? '' : 'none';
+      points.style.display = step.points.length ? '' : 'none';
+      fill.style.width = `${(current / total) * 100}%`;
+      progressLabel.textContent = current === 0 ? 'Ready to present' : `Showing step ${current}`;
+
+      nodeIds.forEach(id => {
+        const el = document.getElementById(id);
+        const stepNo = Number(el.dataset.step);
+        el.classList.remove('pending','active','done');
+        if (step.nodes.includes(id)) el.classList.add(stepNo === current ? 'active' : 'done');
+        else el.classList.add('pending');
+      });
+
+      const activeEdgeId = Object.prototype.hasOwnProperty.call(step, 'activeEdge')
+        ? step.activeEdge
+        : (step.edges.length ? step.edges[step.edges.length - 1] : null);
+      edgeIds.forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.remove('pending','active','done');
+        if (step.edges.includes(id)) {
+          if (id === activeEdgeId) {
+            el.classList.add('active');
+            setMarker(el, 'active');
+          } else {
+            el.classList.add('done');
+            setMarker(el, 'done');
+          }
+        } else {
+          el.classList.add('pending');
+          setMarker(el, 'pending');
+        }
+      });
+    }
+
+    function next() { current = Math.min(current + 1, steps.length - 1); render(); }
+    function prev() { current = Math.max(current - 1, 0); render(); }
+
+    document.getElementById('nextBtn').addEventListener('click', next);
+    document.getElementById('prevBtn').addEventListener('click', prev);
+    document.getElementById('resetBtn').addEventListener('click', () => { current = 0; render(); });
+
+    window.addEventListener('keydown', e => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        e.shiftKey ? prev() : next();
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault(); next();
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault(); prev();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

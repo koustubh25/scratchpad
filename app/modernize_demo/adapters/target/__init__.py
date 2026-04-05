@@ -1,0 +1,2 @@
+"""Target-side adapters."""
+

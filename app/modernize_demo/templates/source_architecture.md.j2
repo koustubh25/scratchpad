@@ -1,0 +1,77 @@
+# Source Architecture
+
+## Scope
+
+- Modules covered: {{ architecture.summary.moduleCount }}
+- Tables referenced: {{ architecture.summary.tableCount }}
+- Endpoints inferred: {{ architecture.summary.endpointCount }}
+
+## System Summary
+
+The derived source architecture models the current ColdFusion slice as graph-shaped artifacts. This document is deterministic and rendered from `source-architecture.json`.
+
+## Modules And Responsibilities
+
+{% for module in architecture.modules %}
+### `{{ module.module }}`
+
+- Role: {{ module.role }}
+- Summary: {{ module.summary }}
+- Tables: {{ module.tables | join(", ") if module.tables else "none" }}
+- Dependencies: {{ module.dependencies | join(", ") if module.dependencies else "none" }}
+- Endpoints: {{ module.endpoints | join(", ") if module.endpoints else "none" }}
+- Session usage: {{ module.sessionUsage | join(", ") if module.sessionUsage else "none" }}
+- Config usage: {{ module.configUsage | join(", ") if module.configUsage else "none" }}
+
+{% endfor %}
+
+## Subsystems
+
+{% for cluster in architecture.clusters %}
+- `{{ cluster.description }}`: {{ cluster.members | join(", ") }}
+{% endfor %}
+
+## Dependency Diagram
+
+```mermaid
+flowchart LR
+{% for edge in architecture.edges %}
+    {{ edge.from | replace(":", "_") | replace("-", "_") | replace("/", "_") }}["{{ edge.from }}"] -->|{{ edge.type }}| {{ edge.to | replace(":", "_") | replace("-", "_") | replace("/", "_") }}["{{ edge.to }}"]
+{% endfor %}
+```
+
+## Data And State
+
+{% if architecture.stateDependencies %}
+State writes:
+{% for state in architecture.stateDependencies %}
+- `{{ state.module }}` -> `{{ state.state }}` ({{ state.access }})
+{% endfor %}
+{% else %}
+- No state dependencies captured.
+{% endif %}
+
+{% if architecture.configDependencies %}
+Config usage:
+{% for config in architecture.configDependencies %}
+- `{{ config.module }}` uses `{{ config.config }}`
+{% endfor %}
+{% else %}
+- No config dependencies captured.
+{% endif %}
+
+## External Integrations
+
+{% if architecture.externalIntegrations %}
+{% for integration in architecture.externalIntegrations %}
+- `{{ integration.module }}` depends on `{{ integration.dependency }}`
+{% endfor %}
+{% else %}
+- No external integrations captured.
+{% endif %}
+
+## Hotspots
+
+{% for hotspot in architecture.hotspots %}
+- `{{ hotspot.node }}` score {{ hotspot.score }}
+{% endfor %}

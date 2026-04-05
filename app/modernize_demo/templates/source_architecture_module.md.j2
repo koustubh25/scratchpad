@@ -1,0 +1,61 @@
+# {{ module.module }}
+
+- Role: {{ module.role }}
+- Subsystem: {{ subsystem }}
+- Summary: {{ module.summary }}
+
+## Evidence
+
+- Tables: {{ module.tables | join(", ") if module.tables else "none" }}
+- Endpoints: {{ module.endpoints | join(", ") if module.endpoints else "none" }}
+- Dependencies: {{ module.dependencies | join(", ") if module.dependencies else "none" }}
+- Session usage: {{ module.sessionUsage | join(", ") if module.sessionUsage else "none" }}
+- Config usage: {{ module.configUsage | join(", ") if module.configUsage else "none" }}
+
+{% set ui = facts.ui_evidence if facts and facts.ui_evidence else {} %}
+{% if ui %}
+## UI Evidence
+
+- Title: {{ ui.title if ui.title else "none" }}
+- Headings: {{ ui.headings | join(", ") if ui.headings else "none" }}
+- Stylesheets: {{ ui.stylesheets | join(", ") if ui.stylesheets else "none" }}
+- Redirects: {{ ui.redirects | join(", ") if ui.redirects else "none" }}
+
+{% if ui.forms %}
+### Forms
+
+{% for form in ui.forms %}
+- Action: {{ form.action if form.action else "none" }} | Method: {{ form.method if form.method else "get" }}
+- Inputs: {% if form.inputs %}{% for input in form.inputs %}`{{ input.label if input.label else input.name if input.name else input.id if input.id else "Field" }}`{% if input.name %} (`{{ input.name }}`){% endif %} type `{{ input.type if input.type else "text" }}`{% if input.required %} required{% endif %}{% if input.validate %} validate `{{ input.validate }}`{% endif %}{% if input.message %} message `{{ input.message }}`{% endif %}{% if not loop.last %}; {% endif %}{% endfor %}{% else %}none{% endif %}
+
+- Submit labels: {{ form.submitLabels | join(", ") if form.submitLabels else "none" }}
+
+{% endfor %}
+{% endif %}
+
+{% if ui.links %}
+### Navigation Links
+
+{% for link in ui.links %}
+- `{{ link.text if link.text else link.href }}` -> `{{ link.href }}`
+{% endfor %}
+{% endif %}
+
+{% if ui.errorRegions %}
+### Error Regions
+
+{% for region in ui.errorRegions %}
+- {{ region }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+## Dependency Evidence
+
+{% if dependency_edges %}
+{% for edge in dependency_edges %}
+- `{{ edge.kind }}` -> `{{ edge.to }}`
+{% endfor %}
+{% else %}
+- No dependency edges captured for this module.
+{% endif %}

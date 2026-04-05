@@ -1,0 +1,49 @@
+# Target Architecture
+
+## Scope
+
+- Target stack: {{ target_stack_label }}
+- Services: {{ architecture.services | length }}
+- UI components: {{ architecture.uiComponents | length }}
+
+## Target Stack
+
+- Backend convention: `{{ conventions.backend.framework }}`
+- Frontend convention: `{{ conventions.frontend.framework }}`
+- Architectural style: `{{ architecture.targetProfile.architectureStyle }}`
+- Deployment style: `{{ architecture.targetProfile.deploymentStyle }}`
+
+## Service And Component Design
+
+{% for service in architecture.services %}
+- `{{ service.name }}`: {{ service.responsibility }}
+{% endfor %}
+
+{% for component in architecture.uiComponents %}
+- UI `{{ component.name }}`: owns {{ component.owns }} and maps from `{{ component.mapsFrom }}`
+  Title: {{ component.title }}
+  Headings: {{ component.headings | join(", ") if component.headings else "none" }}
+  Forms: {{ component.forms | length }}
+  Links: {{ component.links | length }}
+  Redirects: {{ component.redirects | join(", ") if component.redirects else "none" }}
+{% endfor %}
+
+## Source To Target Mapping
+
+```mermaid
+flowchart LR
+{% for mapping in architecture.sourceMappings %}
+    {{ mapping.source | replace("-", "_") }}["{{ mapping.source }}"] --> {{ mapping.target | replace("-", "_") }}["{{ mapping.target }}"]
+{% endfor %}
+```
+
+## API Contracts
+
+{% for endpoint in architecture.apiContracts %}
+- `{{ endpoint.method }} {{ endpoint.path }}` from `{{ endpoint.source }}` via `{{ endpoint.service }}`
+{% endfor %}
+
+## Generation Boundaries
+
+- Generated: {{ architecture.generationBoundaries.generated | join(", ") }}
+- Manual: {{ architecture.generationBoundaries.manual | join(", ") }}

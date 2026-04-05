@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modernize Architecture Walkthrough</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: rgba(255, 252, 246, 0.88);
+      --panel-strong: #fffaf0;
+      --ink: #1f2933;
+      --muted: #5f6c7b;
+      --line: #d7c7ab;
+      --line-active: #d97706;
+      --node: #fffdf8;
+      --node-border: #bfa37a;
+      --node-active: #fff0c2;
+      --node-done: #e8f7ea;
+      --node-done-border: #4d8c57;
+      --shadow: 0 16px 40px rgba(70, 43, 18, 0.10);
+      --accent: #a94f16;
+      --accent-2: #0f766e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(217, 119, 6, 0.10), transparent 26%),
+        radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.12), transparent 28%),
+        linear-gradient(180deg, #f8f4ec 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 2460px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .title-block h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .title-block p {
+      margin: 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .controls {
+      background: var(--panel);
+      border: 1px solid rgba(191, 163, 122, 0.7);
+      border-radius: 18px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      min-width: 290px;
+    }
+
+    .controls strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .controls p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .control-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid var(--node-border);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 9px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #fff7e9;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(1180px, 1.75fr) minmax(340px, 0.65fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .diagram-wrap,
+    .side-panel {
+      background: var(--panel);
+      border: 1px solid rgba(191, 163, 122, 0.7);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .diagram-wrap {
+      padding: 20px 24px;
+      overflow: hidden;
+    }
+
+    .side-panel {
+      padding: 18px;
+      position: sticky;
+      top: 20px;
+    }
+
+    svg {
+      width: 100%;
+      min-width: 0;
+      height: auto;
+      display: block;
+    }
+
+    .node rect {
+      fill: var(--node);
+      stroke: var(--node-border);
+      stroke-width: 2;
+      rx: 22;
+      ry: 22;
+      transition: fill 240ms ease, stroke 240ms ease, transform 240ms ease, filter 240ms ease;
+    }
+
+    .node .label {
+      font-size: 16px;
+      font-weight: 600;
+      fill: var(--ink);
+      text-anchor: middle;
+    }
+
+    .node .desc {
+      font-size: 12px;
+      fill: var(--muted);
+      text-anchor: middle;
+    }
+
+    .node.pending {
+      opacity: 0.28;
+    }
+
+    .node.active rect {
+      fill: var(--node-active);
+      stroke: var(--line-active);
+      filter: drop-shadow(0 0 12px rgba(217, 119, 6, 0.25));
+    }
+
+    .node.done rect {
+      fill: var(--node-done);
+      stroke: var(--node-done-border);
+    }
+
+    .edge {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 4;
+      stroke-linecap: round;
+      transition: stroke 220ms ease, opacity 220ms ease;
+      opacity: 0.4;
+    }
+
+    .edge.pending {
+      opacity: 0.16;
+    }
+
+    .edge.active {
+      stroke: var(--line-active);
+      opacity: 1;
+    }
+
+    .edge.done {
+      stroke: var(--node-done-border);
+      opacity: 0.42;
+    }
+
+    .edge-label {
+      font-size: 14px;
+      fill: var(--muted);
+      text-anchor: middle;
+      opacity: 0.08;
+      paint-order: stroke fill;
+      stroke: rgba(255, 250, 240, 0.96);
+      stroke-width: 10px;
+      stroke-linejoin: round;
+      transition: fill 220ms ease, opacity 220ms ease;
+    }
+
+    .edge-label.active {
+      fill: var(--line-active);
+      opacity: 1;
+      font-weight: 700;
+    }
+
+    .edge-label.done {
+      fill: var(--node-done-border);
+      opacity: 0;
+      font-weight: 600;
+    }
+
+    .step-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: #fff5df;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .step-title {
+      margin: 14px 0 10px;
+      font-size: 28px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .step-copy {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .step-points {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink);
+    }
+
+    .step-points li {
+      margin-bottom: 10px;
+      line-height: 1.45;
+    }
+
+    .progress {
+      margin-top: 18px;
+      border-top: 1px solid rgba(191, 163, 122, 0.6);
+      padding-top: 16px;
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: rgba(191, 163, 122, 0.24);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #e7a239);
+      transition: width 260ms ease;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1500px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        position: static;
+      }
+
+      .page {
+        max-width: 1440px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="title-block">
+        <h1>Modernize Architecture Walkthrough</h1>
+        <p>
+          A manual, presenter-controlled walkthrough of the high-level modernization flow.
+          Press <strong>Space</strong> to move forward and <strong>Shift+Space</strong> or <strong>Arrow Left</strong> to move backward.
+        </p>
+      </div>
+      <div class="controls">
+        <strong>Presenter Controls</strong>
+        <p>`Space` advances one step. `Shift + Space` or `Arrow Left` moves back. `Arrow Right` also advances.</p>
+        <div class="control-row">
+          <button id="prevBtn" type="button">Previous</button>
+          <button id="nextBtn" type="button">Next</button>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 2080 1180" aria-labelledby="diagramTitle" role="img">
+          <title id="diagramTitle">Modernize high-level architecture walkthrough</title>
+
+          <defs>
+            <marker id="arrowDefault" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#d7c7ab"></path>
+            </marker>
+            <marker id="arrowActive" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#d97706"></path>
+            </marker>
+            <marker id="arrowDone" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+              <path d="M0,0 L12,6 L0,12 Z" fill="#4d8c57"></path>
+            </marker>
+          </defs>
+
+          <path id="edge-start-source" class="edge pending" data-step="1" data-kind="edge" d="M280 250 L280 205 L430 205 L430 145" marker-end="url(#arrowDefault)"></path>
+          <text x="360" y="190" class="edge-label" data-step="1" data-kind="label">1. parse + source conventions</text>
+
+          <path id="edge-cli-source" class="edge pending" data-step="0" data-kind="edge" d="M125 220 L125 265" marker-end="url(#arrowDefault)"></path>
+          <text x="195" y="252" class="edge-label" data-step="0" data-kind="label">control surface</text>
+
+          <path id="edge-source-core" class="edge pending" data-step="2" data-kind="edge" d="M660 145 L860 145" marker-end="url(#arrowDefault)"></path>
+          <text x="760" y="176" class="edge-label" data-step="2" data-kind="label">2. build core artifacts</text>
+
+          <path id="edge-core-ast" class="edge pending" data-step="2" data-kind="edge" d="M1110 145 L1520 145" marker-end="url(#arrowDefault)"></path>
+          <text x="1315" y="176" class="edge-label" data-step="2" data-kind="label">2a. AST</text>
+
+          <path id="edge-core-facts" class="edge pending" data-step="3" data-kind="edge" d="M1110 170 C1320 170 1320 310 1520 310" marker-end="url(#arrowDefault)"></path>
+          <text x="1360" y="250" class="edge-label" data-step="3" data-kind="label">3. facts</text>
+
+          <path id="edge-core-semantics" class="edge pending" data-step="4" data-kind="edge" d="M1110 190 C1320 240 1400 420 1520 475" marker-end="url(#arrowDefault)"></path>
+          <text x="1390" y="438" class="edge-label" data-step="4" data-kind="label">4. semantics</text>
+
+          <path id="edge-core-ai" class="edge pending" data-step="4" data-kind="edge" d="M985 230 L985 295 L845 295 L845 345" marker-end="url(#arrowDefault)"></path>
+          <text x="928" y="302" class="edge-label" data-step="4" data-kind="label">AI assist</text>
+
+          <path id="edge-semantics-review" class="edge pending" data-step="5" data-kind="edge" d="M1660 550 L1660 730 L535 730 L535 760" marker-end="url(#arrowDefault)"></path>
+          <text x="1260" y="708" class="edge-label" data-step="5" data-kind="label">5. review + correct</text>
+
+          <path id="edge-advisory-review" class="edge pending" data-step="5" data-kind="edge" d="M810 635 L810 690 L535 690 L535 760" marker-end="url(#arrowDefault)"></path>
+          <text x="690" y="676" class="edge-label" data-step="5" data-kind="label">review support</text>
+
+          <path id="edge-review-lock" class="edge pending" data-step="6" data-kind="edge" d="M535 880 L535 970" marker-end="url(#arrowDefault)"></path>
+          <text x="650" y="930" class="edge-label" data-step="6" data-kind="label">6. lock approved state</text>
+
+          <path id="edge-lock-sourcearch" class="edge pending" data-step="6" data-kind="edge" d="M660 1015 L760 1015 L760 850" marker-end="url(#arrowDefault)"></path>
+          <text x="806" y="998" class="edge-label" data-step="6" data-kind="label">6a. source architecture</text>
+
+          <path id="edge-sourcearch-targetarch" class="edge pending" data-step="7" data-kind="edge" d="M1080 850 L1180 850" marker-end="url(#arrowDefault)"></path>
+          <text x="1130" y="832" class="edge-label" data-step="7" data-kind="label">7a. target design</text>
+
+          <path id="edge-targetadapter-targetarch" class="edge pending" data-step="7" data-kind="edge" d="M1500 720 L1500 850 L1480 850" marker-end="url(#arrowDefault)"></path>
+          <text x="1590" y="790" class="edge-label" data-step="7" data-kind="label">target conventions</text>
+
+          <path id="edge-targetarch-generation" class="edge pending" data-step="7" data-kind="edge" d="M1330 920 L1330 955" marker-end="url(#arrowDefault)"></path>
+          <text x="1440" y="944" class="edge-label" data-step="7" data-kind="label">7b. generation inputs</text>
+
+          <path id="edge-gen-output" class="edge pending" data-step="8" data-kind="edge" d="M1330 1095 L1330 1120 L1570 1120 L1570 1060" marker-end="url(#arrowDefault)"></path>
+          <text x="1450" y="1100" class="edge-label" data-step="8" data-kind="label">8. generated outputs</text>
+
+          <path id="edge-lock-verify" class="edge pending" data-step="9" data-kind="edge" d="M660 1045 L730 1045" marker-end="url(#arrowDefault)"></path>
+          <text x="642" y="1078" class="edge-label" data-step="9" data-kind="label">9. locked inputs</text>
+
+          <path id="edge-advisory-verify" class="edge pending" data-step="9" data-kind="edge" d="M810 635 L810 915 L865 915 L865 975" marker-end="url(#arrowDefault)"></path>
+          <text x="930" y="900" class="edge-label" data-step="9" data-kind="label">risk / test help</text>
+
+          <path id="edge-verify-report" class="edge pending" data-step="10" data-kind="edge" d="M730 1045 L300 1045" marker-end="url(#arrowDefault)"></path>
+          <text x="516" y="1070" class="edge-label" data-step="10" data-kind="label">10. conformance report</text>
+
+          <path id="edge-audit-core" class="edge pending" data-step="11" data-kind="edge" d="M860 190 C700 260 520 340 250 430" marker-end="url(#arrowDefault)"></path>
+          <text x="562" y="302" class="edge-label" data-step="11" data-kind="label">audit trail</text>
+
+          <path id="edge-audit-gen" class="edge pending" data-step="11" data-kind="edge" d="M970 835 C880 760 720 640 455 520" marker-end="url(#arrowDefault)"></path>
+          <text x="718" y="660" class="edge-label" data-step="11" data-kind="label">generation logged</text>
+
+          <path id="edge-audit-verify" class="edge pending" data-step="11" data-kind="edge" d="M865 980 C800 920 700 840 455 560" marker-end="url(#arrowDefault)"></path>
+          <text x="720" y="900" class="edge-label" data-step="11" data-kind="label">verification logged</text>
+
+          <g class="node pending" id="node-cli" data-step="0" transform="translate(30 70)">
+            <rect width="190" height="150"></rect>
+            <text class="label" x="95" y="54">CLI / Orchestrator</text>
+            <text class="desc" x="95" y="88">Runs stages, tracks progress,</text>
+            <text class="desc" x="95" y="110">and coordinates recovery</text>
+          </g>
+
+          <g class="node pending" id="node-legacy" data-step="1" transform="translate(130 265)">
+            <rect width="300" height="120"></rect>
+            <text class="label" x="150" y="44">Legacy Source Code</text>
+            <text class="desc" x="150" y="74">Original application files, templates,</text>
+            <text class="desc" x="150" y="96">scripts, and source assets</text>
+          </g>
+
+          <g class="node pending" id="node-source" data-step="1" transform="translate(430 70)">
+            <rect width="230" height="150"></rect>
+            <text class="label" x="115" y="50">Source-Side</text>
+            <text class="label" x="115" y="74">Adapters</text>
+            <text class="desc" x="115" y="106">Parse legacy code and expose</text>
+            <text class="desc" x="115" y="128">source-language conventions</text>
+          </g>
+
+          <g class="node pending" id="node-core" data-step="2" transform="translate(860 70)">
+            <rect width="250" height="160"></rect>
+            <text class="label" x="125" y="56">Core Engine</text>
+            <text class="desc" x="125" y="92">Builds artifacts, validates schemas,</text>
+            <text class="desc" x="125" y="114">and prepares AI calls</text>
+          </g>
+
+          <g class="node pending" id="node-ast" data-step="2" transform="translate(1520 70)">
+            <rect width="280" height="130"></rect>
+            <text class="label" x="140" y="48">AST Artifacts</text>
+            <text class="desc" x="140" y="80">Structured source representation</text>
+            <text class="desc" x="140" y="102">with diagnostics</text>
+          </g>
+
+          <g class="node pending" id="node-facts" data-step="3" transform="translate(1520 245)">
+            <rect width="280" height="130"></rect>
+            <text class="label" x="140" y="48">Fact Artifacts</text>
+            <text class="desc" x="140" y="80">Deterministic behavioral facts</text>
+            <text class="desc" x="140" y="102">derived from AST</text>
+          </g>
+
+          <g class="node pending" id="node-semantics" data-step="4" transform="translate(1520 420)">
+            <rect width="280" height="130"></rect>
+            <text class="label" x="140" y="48">Semantic Artifacts</text>
+            <text class="desc" x="140" y="80">Interpreted meaning with</text>
+            <text class="desc" x="140" y="102">confidence and evidence</text>
+          </g>
+
+          <g class="node pending" id="node-ai" data-step="4" transform="translate(650 345)">
+            <rect width="390" height="130"></rect>
+            <text class="label" x="195" y="48">AI Provider Interface</text>
+            <text class="desc" x="195" y="80">Bounded AI used during reasoning</text>
+            <text class="desc" x="195" y="102">and later review support stages</text>
+          </g>
+
+          <g class="node pending" id="node-audit" data-step="11" transform="translate(40 430)">
+            <rect width="420" height="130"></rect>
+            <text class="label" x="210" y="48">Audit Log</text>
+            <text class="desc" x="210" y="80">Tamper-evident record of AI interactions,</text>
+            <text class="desc" x="210" y="102">generation activity, and verification decisions</text>
+          </g>
+
+          <g class="node pending" id="node-advisory" data-step="5" transform="translate(650 515)">
+            <rect width="320" height="120"></rect>
+            <text class="label" x="160" y="46">Advisory Agents</text>
+            <text class="desc" x="160" y="78">Optional review acceleration, risk surfacing,</text>
+            <text class="desc" x="160" y="100">and test help</text>
+          </g>
+
+          <g class="node pending" id="node-sourcearch" data-step="6" transform="translate(760 790)">
+            <rect width="320" height="120"></rect>
+            <text class="label" x="160" y="46">Source Architecture</text>
+            <text class="desc" x="160" y="78">Approved as-is system structure,</text>
+            <text class="desc" x="160" y="100">dependencies, and coupling model</text>
+          </g>
+
+          <g class="node pending" id="node-targetarch" data-step="7" transform="translate(1180 790)">
+            <rect width="300" height="130"></rect>
+            <text class="label" x="150" y="46">Target Architecture</text>
+            <text class="desc" x="150" y="80">Approved to-be service boundaries,</text>
+            <text class="desc" x="150" y="102">APIs, and design constraints</text>
+          </g>
+
+          <g class="node pending" id="node-target" data-step="7" transform="translate(1500 565)">
+            <rect width="300" height="130"></rect>
+            <text class="label" x="150" y="46">Target-Side Adapters</text>
+            <text class="desc" x="150" y="80">Provide stack conventions, templates,</text>
+            <text class="desc" x="150" y="102">and generation rules</text>
+          </g>
+
+          <g class="node pending" id="node-review" data-step="5" transform="translate(390 760)">
+            <rect width="290" height="120"></rect>
+            <text class="label" x="145" y="46">Review Workflow</text>
+            <text class="desc" x="145" y="78">Human approval, corrections,</text>
+            <text class="desc" x="145" y="100">and conflict handling</text>
+          </g>
+
+          <g class="node pending" id="node-generation" data-step="7" transform="translate(1180 955)">
+            <rect width="300" height="130"></rect>
+            <text class="label" x="150" y="50">Generation Engine</text>
+            <text class="desc" x="150" y="84">Produces target-system code</text>
+            <text class="desc" x="150" y="106">from locked inputs</text>
+          </g>
+
+          <g class="node pending" id="node-lock" data-step="6" transform="translate(380 970)">
+            <rect width="280" height="90"></rect>
+            <text class="label" x="140" y="40">Lock Manager</text>
+            <text class="desc" x="140" y="66">Freezes approved artifacts</text>
+          </g>
+
+          <g class="node pending" id="node-output" data-step="8" transform="translate(1570 1060)">
+            <rect width="300" height="110"></rect>
+            <text class="label" x="150" y="42">Generated Services</text>
+            <text class="desc" x="150" y="74">Target-system code and</text>
+            <text class="desc" x="150" y="96">generation metadata</text>
+          </g>
+
+          <g class="node pending" id="node-verify" data-step="9" transform="translate(730 975)">
+            <rect width="270" height="110"></rect>
+            <text class="label" x="135" y="42">Verification</text>
+            <text class="desc" x="135" y="74">Replay, comparison, and</text>
+            <text class="desc" x="135" y="96">drift analysis</text>
+          </g>
+
+          <g class="node pending" id="node-report" data-step="10" transform="translate(40 995)">
+            <rect width="260" height="100"></rect>
+            <text class="label" x="130" y="42">Reports</text>
+            <text class="desc" x="130" y="70">Conformance outputs and</text>
+            <text class="desc" x="130" y="92">release-facing evidence</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="side-panel">
+        <div class="step-pill" id="stepPill">Step 0 of 11</div>
+        <h2 class="step-title" id="stepTitle">Pipeline entrypoint</h2>
+        <p class="step-copy" id="stepCopy">
+          The CLI is the operator-facing control surface for the modernization engine. It drives the state machine but is not the engine itself.
+        </p>
+        <ul class="step-points" id="stepPoints"></ul>
+
+        <div class="progress">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-meta">
+            <span id="progressLabel">Ready to present</span>
+            <span>Manual progression</span>
+          </div>
+        </div>
+
+        <p class="footer-note">
+          Suggested flow: explain each highlighted step, then press <strong>Space</strong> when you want the diagram to move on.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const steps = [
+      {
+        title: "Pipeline entrypoint",
+        copy: "The CLI is the operator-facing control surface for the modernization engine. It starts, resumes, and inspects the state machine without being the engine itself.",
+        points: [
+          "This is the MVP execution surface for the whole workflow.",
+          "State, artifacts, and recovery logic live behind it rather than inside ad hoc scripts."
+        ],
+        nodes: ["node-cli"],
+        edges: ["edge-cli-source"]
+      },
+      {
+        title: "Source understanding starts here",
+        copy: "The modernization flow begins with the legacy codebase itself. Source-side adapters read that code and provide the parsing rules and conventions needed to begin reliable analysis.",
+        points: [
+          "Legacy source code is the real data input to the pipeline.",
+          "Adapters are reusable and versioned rather than hardcoded into one migration path.",
+          "This is where source-specific knowledge enters the pipeline."
+        ],
+        nodes: ["node-cli", "node-legacy", "node-source"],
+        edges: ["edge-cli-source", "edge-start-source"]
+      },
+      {
+        title: "Core engine creates the structural baseline",
+        copy: "The core engine turns raw source into stable artifacts and persists the AST as the first durable understanding layer.",
+        points: [
+          "The AST is deterministic and traceable to source plus adapter version.",
+          "This stage creates the foundation for everything downstream."
+        ],
+        nodes: ["node-cli", "node-legacy", "node-source", "node-core", "node-ast"],
+        edges: ["edge-cli-source", "edge-start-source", "edge-source-core", "edge-core-ast"]
+      },
+      {
+        title: "Deterministic facts are extracted",
+        copy: "The pipeline derives normalized observable facts from the AST before any higher-level interpretation is attempted.",
+        points: [
+          "This separation keeps syntax and behavior extraction distinct.",
+          "Facts are the reliable bridge between parsing and semantics."
+        ],
+        nodes: ["node-cli", "node-legacy", "node-source", "node-core", "node-ast", "node-facts"],
+        edges: ["edge-cli-source", "edge-start-source", "edge-source-core", "edge-core-ast", "edge-core-facts"]
+      },
+      {
+        title: "Semantics are derived with bounded AI help",
+        copy: "The system infers business meaning from facts, using AI only where reasoning is needed and keeping the evidence trail intact.",
+        points: [
+          "AI assists at the reasoning layer, not by parsing raw source directly.",
+          "Semantic output remains reviewable and confidence-tagged."
+        ],
+        nodes: ["node-cli", "node-legacy", "node-source", "node-core", "node-ast", "node-facts", "node-semantics", "node-ai"],
+        edges: ["edge-cli-source", "edge-start-source", "edge-source-core", "edge-core-ast", "edge-core-facts", "edge-core-semantics", "edge-core-ai"]
+      },
+      {
+        title: "Humans review and advisory agents assist",
+        copy: "The review workflow is where uncertainty gets resolved. Optional advisory agents can help prioritize review, but they do not change the truth by themselves.",
+        points: [
+          "Humans approve semantics and resolve corrections before anything is frozen.",
+          "Advisory agents are intentionally non-blocking."
+        ],
+        nodes: ["node-cli", "node-legacy", "node-source", "node-core", "node-ast", "node-facts", "node-semantics", "node-ai", "node-review", "node-advisory"],
+        edges: ["edge-cli-source", "edge-start-source", "edge-source-core", "edge-core-ast", "edge-core-facts", "edge-core-semantics", "edge-core-ai", "edge-semantics-review", "edge-advisory-review"]
+      },
+      {
+        title: "Approved understanding is locked",
+        copy: "Once reviewed, the lock manager freezes approved artifacts and the platform derives a stable source architecture from that approved understanding.",
+        points: [
+          "This is the trust boundary of the whole system.",
+          "The source architecture becomes the approved as-is system model for later target design.",
+          "Stale locks are invalidated explicitly rather than updated silently."
+        ],
+        nodes: ["node-cli", "node-legacy", "node-source", "node-core", "node-ast", "node-facts", "node-semantics", "node-ai", "node-review", "node-advisory", "node-lock", "node-sourcearch"],
+        edges: ["edge-cli-source", "edge-start-source", "edge-source-core", "edge-core-ast", "edge-core-facts", "edge-core-semantics", "edge-core-ai", "edge-semantics-review", "edge-advisory-review", "edge-review-lock", "edge-lock-sourcearch"]
+      },
+      {
+        title: "Target architecture is shaped before generation",
+        copy: "The approved source architecture and target-side adapters are combined to produce the approved target architecture that generation will follow.",
+        points: [
+          "Source architecture captures the as-is system model.",
+          "Target architecture captures the approved to-be service boundaries and APIs.",
+          "Target-side adapters encode stack-specific rules and templates.",
+          "Generation is driven by approved architecture, not by reinterpreting the legacy system."
+        ],
+        nodes: ["node-cli", "node-legacy", "node-source", "node-core", "node-ast", "node-facts", "node-semantics", "node-ai", "node-review", "node-advisory", "node-lock", "node-sourcearch", "node-targetarch", "node-target", "node-generation"],
+        edges: ["edge-cli-source", "edge-start-source", "edge-source-core", "edge-core-ast", "edge-core-facts", "edge-core-semantics", "edge-core-ai", "edge-semantics-review", "edge-advisory-review", "edge-review-lock", "edge-lock-sourcearch", "edge-sourcearch-targetarch", "edge-targetadapter-targetarch", "edge-targetarch-generation"]
+      },
+      {
+        title: "Generated outputs are produced",
+        copy: "The framework emits target services and generation metadata so later regeneration and verification can reason about exactly what was produced.",
+        points: [
+          "Generated outputs are framework results, not part of the framework itself.",
+          "Metadata supports future reruns, merges, and provenance checks."
+        ],
+        nodes: ["node-cli", "node-legacy", "node-source", "node-core", "node-ast", "node-facts", "node-semantics", "node-ai", "node-review", "node-advisory", "node-lock", "node-sourcearch", "node-targetarch", "node-target", "node-generation", "node-output"],
+        edges: ["edge-cli-source", "edge-start-source", "edge-source-core", "edge-core-ast", "edge-core-facts", "edge-core-semantics", "edge-core-ai", "edge-semantics-review", "edge-advisory-review", "edge-review-lock", "edge-lock-sourcearch", "edge-sourcearch-targetarch", "edge-targetadapter-targetarch", "edge-targetarch-generation", "edge-gen-output"]
+      },
+      {
+        title: "Verification checks the generated system",
+        copy: "Verification consumes locked expectations and the generated system to compare behavior, classify drift, and support release decisions.",
+        points: [
+          "Verification is tied to locked semantics and architecture, not just the generated code.",
+          "Advisory support can help with tests and risk surfacing here as well."
+        ],
+        nodes: ["node-cli", "node-legacy", "node-source", "node-core", "node-ast", "node-facts", "node-semantics", "node-ai", "node-review", "node-advisory", "node-lock", "node-sourcearch", "node-targetarch", "node-target", "node-generation", "node-output", "node-verify"],
+        edges: ["edge-cli-source", "edge-start-source", "edge-source-core", "edge-core-ast", "edge-core-facts", "edge-core-semantics", "edge-core-ai", "edge-semantics-review", "edge-advisory-review", "edge-review-lock", "edge-lock-sourcearch", "edge-sourcearch-targetarch", "edge-targetadapter-targetarch", "edge-targetarch-generation", "edge-gen-output", "edge-lock-verify", "edge-advisory-verify"]
+      },
+      {
+        title: "Reports become the release-facing output",
+        copy: "Verification produces conformance reports that inform cutover readiness, drift decisions, and rollout confidence.",
+        points: [
+          "This is the operational checkpoint before controlled cutover.",
+          "Reports are where engineering and migration stakeholders align on go/no-go."
+        ],
+        nodes: ["node-cli", "node-legacy", "node-source", "node-core", "node-ast", "node-facts", "node-semantics", "node-ai", "node-review", "node-advisory", "node-lock", "node-sourcearch", "node-targetarch", "node-target", "node-generation", "node-output", "node-verify", "node-report"],
+        edges: ["edge-cli-source", "edge-start-source", "edge-source-core", "edge-core-ast", "edge-core-facts", "edge-core-semantics", "edge-core-ai", "edge-semantics-review", "edge-advisory-review", "edge-review-lock", "edge-lock-sourcearch", "edge-sourcearch-targetarch", "edge-targetadapter-targetarch", "edge-targetarch-generation", "edge-gen-output", "edge-lock-verify", "edge-advisory-verify", "edge-verify-report"]
+      },
+      {
+        title: "The whole flow stays auditable",
+        copy: "Throughout the pipeline, audit logging records AI-assisted reasoning and downstream actions so the modernization process stays inspectable and governable.",
+        points: [
+          "Audit is not an afterthought; it is part of the trust model.",
+          "This is what lets a high-stakes modernization process remain reviewable later."
+        ],
+        nodes: ["node-cli", "node-legacy", "node-source", "node-core", "node-ast", "node-facts", "node-semantics", "node-ai", "node-review", "node-advisory", "node-lock", "node-sourcearch", "node-targetarch", "node-target", "node-generation", "node-output", "node-verify", "node-report", "node-audit"],
+        edges: ["edge-cli-source", "edge-start-source", "edge-source-core", "edge-core-ast", "edge-core-facts", "edge-core-semantics", "edge-core-ai", "edge-semantics-review", "edge-advisory-review", "edge-review-lock", "edge-lock-sourcearch", "edge-sourcearch-targetarch", "edge-targetadapter-targetarch", "edge-targetarch-generation", "edge-gen-output", "edge-lock-verify", "edge-advisory-verify", "edge-verify-report", "edge-audit-core", "edge-audit-gen", "edge-audit-verify"]
+      }
+    ];
+
+    let currentStep = 0;
+
+    const stepPill = document.getElementById("stepPill");
+    const stepTitle = document.getElementById("stepTitle");
+    const stepCopy = document.getElementById("stepCopy");
+    const stepPoints = document.getElementById("stepPoints");
+    const progressFill = document.getElementById("progressFill");
+    const progressLabel = document.getElementById("progressLabel");
+
+    const nodeIds = Array.from(document.querySelectorAll(".node")).map(el => el.id);
+    const edgeIds = Array.from(document.querySelectorAll(".edge")).map(el => el.id);
+    const labelEls = Array.from(document.querySelectorAll(".edge-label"));
+
+    function updateView() {
+      const step = steps[currentStep];
+      const total = steps.length - 1;
+
+      stepPill.textContent = `Step ${currentStep} of ${total}`;
+      stepTitle.textContent = step.title;
+      stepCopy.textContent = step.copy;
+      stepPoints.innerHTML = "";
+      step.points.forEach(point => {
+        const li = document.createElement("li");
+        li.textContent = point;
+        stepPoints.appendChild(li);
+      });
+
+      const progressPercent = (currentStep / total) * 100;
+      progressFill.style.width = `${progressPercent}%`;
+      progressLabel.textContent = currentStep === 0 ? "Ready to present" : `Showing step ${currentStep}`;
+
+      nodeIds.forEach(id => {
+        const node = document.getElementById(id);
+        const nodeStep = Number(node.dataset.step);
+        node.classList.remove("pending", "active", "done");
+        if (step.nodes.includes(id)) {
+          node.classList.add(nodeStep === currentStep ? "active" : "done");
+        } else {
+          node.classList.add("pending");
+        }
+      });
+
+      edgeIds.forEach(id => {
+        const edge = document.getElementById(id);
+        const edgeStep = Number(edge.dataset.step);
+        edge.classList.remove("pending", "active", "done");
+
+        if (step.edges.includes(id)) {
+          if (edgeStep === currentStep) {
+            edge.classList.add("active");
+            edge.setAttribute("marker-end", "url(#arrowActive)");
+          } else {
+            edge.classList.add("done");
+            edge.setAttribute("marker-end", "url(#arrowDone)");
+          }
+        } else {
+          edge.classList.add("pending");
+          edge.setAttribute("marker-end", "url(#arrowDefault)");
+        }
+      });
+
+      labelEls.forEach(label => {
+        const labelStep = Number(label.dataset.step);
+        const edgeId = label.previousElementSibling.id;
+        label.classList.remove("active", "done");
+        if (step.edges.includes(edgeId)) {
+          label.classList.add(labelStep === currentStep ? "active" : "done");
+        }
+      });
+    }
+
+    function nextStep() {
+      currentStep = Math.min(currentStep + 1, steps.length - 1);
+      updateView();
+    }
+
+    function prevStep() {
+      currentStep = Math.max(currentStep - 1, 0);
+      updateView();
+    }
+
+    document.getElementById("nextBtn").addEventListener("click", nextStep);
+    document.getElementById("prevBtn").addEventListener("click", prevStep);
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      currentStep = 0;
+      updateView();
+    });
+
+    window.addEventListener("keydown", (event) => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        if (event.shiftKey) {
+          prevStep();
+        } else {
+          nextStep();
+        }
+      } else if (event.code === "ArrowRight") {
+        event.preventDefault();
+        nextStep();
+      } else if (event.code === "ArrowLeft") {
+        event.preventDefault();
+        prevStep();
+      } else if (event.code === "Home") {
+        event.preventDefault();
+        currentStep = 0;
+        updateView();
+      }
+    });
+
+    updateView();
+  </script>
+</body>
+</html>

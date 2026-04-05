@@ -1,0 +1,7 @@
+jinja2>=3.1,<4
+tree-sitter>=0.25,<0.26
+tree-sitter-language-pack>=1.4,<2
+doitlive>=5.2,<6
+openai>=1.0,<2
+anthropic>=0.39,<1
+google-genai>=0.8,<1
