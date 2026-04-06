@@ -374,7 +374,7 @@ def _find_first_tag(elements: list[Node], source_bytes: bytes, tag: str) -> Node
 
 def _iter_elements(nodes: Iterable[Node]) -> Iterable[Node]:
     for node in nodes:
-        if node.type == "element":
+        if node.type == "element" and _has_start_tag(node):
             yield node
 
 
@@ -382,7 +382,8 @@ def _walk_elements(nodes: Iterable[Node]) -> Iterable[Node]:
     for node in nodes:
         if node.type != "element":
             continue
-        yield node
+        if _has_start_tag(node):
+            yield node
         yield from _walk_elements(node.children)
 
 
@@ -393,7 +394,16 @@ def _start_tag(element: Node) -> Node:
     raise ValueError("element missing start_tag")
 
 
+def _has_start_tag(element: Node) -> bool:
+    for child in element.children:
+        if child.type == "start_tag":
+            return True
+    return False
+
+
 def _tag_name(element: Node, source_bytes: bytes) -> str:
+    if not _has_start_tag(element):
+        return ""
     start_tag = _start_tag(element)
     for child in start_tag.children:
         if child.type == "tag_name":
