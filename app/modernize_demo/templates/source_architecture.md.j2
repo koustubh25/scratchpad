@@ -35,8 +35,8 @@ The derived source architecture models the current ColdFusion slice as graph-sha
 
 ```mermaid
 flowchart LR
-{% for edge in architecture.edges %}
-    {{ edge.from | replace(":", "_") | replace("-", "_") | replace("/", "_") | replace(".", "_") | replace(" ", "_") | replace("(", "_") | replace(")", "_") }}["{{ edge.from }}"] -->|{{ edge.type }}| {{ edge.to | replace(":", "_") | replace("-", "_") | replace("/", "_") | replace(".", "_") | replace(" ", "_") | replace("(", "_") | replace(")", "_") }}["{{ edge.to }}"]
+{% for edge in architecture.mermaid.dependencyEdges %}
+    {{ edge.fromId }}["{{ edge.fromLabel }}"] -->|{{ edge.label }}| {{ edge.toId }}["{{ edge.toLabel }}"]
 {% endfor %}
 ```
 
@@ -67,8 +67,8 @@ Config usage:
 
 ```mermaid
 flowchart LR
-{% for integration in architecture.externalIntegrations %}
-    {{ integration.module | replace(":", "_") | replace("-", "_") | replace("/", "_") | replace(".", "_") | replace(" ", "_") | replace("(", "_") | replace(")", "_") }}["{{ integration.module }}"] -->|depends_on| external_{{ integration.dependency | replace(":", "_") | replace("-", "_") | replace("/", "_") | replace(".", "_") | replace(" ", "_") | replace("(", "_") | replace(")", "_") }}["{{ integration.dependency }}"]
+{% for edge in architecture.mermaid.externalEdges %}
+    {{ edge.fromId }}["{{ edge.fromLabel }}"] -->|{{ edge.label }}| {{ edge.toId }}["{{ edge.toLabel }}"]
 {% endfor %}
 ```
 

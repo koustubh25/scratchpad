@@ -121,6 +121,7 @@ def run_source_architect(state: ProjectState) -> dict:
         "version": "1.0",
         "nodes": nodes,
         "edges": edges,
+        "mermaid": _build_mermaid_graph(nodes, edges, external_integrations),
         "clusters": clusters,
         "modules": sorted(module_summaries, key=lambda item: item["module"].lower()),
         "stateDependencies": sorted(state_dependencies, key=lambda item: (item["module"], item["state"])),
@@ -300,6 +301,57 @@ def render_source_architecture_review_documents(state: ProjectState) -> dict:
         "modules": module_entries,
     }
 TEMPLATE_DIR = Path(__file__).resolve().parents[1] / "templates"
+
+
+def _build_mermaid_graph(nodes: list[dict], edges: list[dict], external_integrations: list[dict]) -> dict:
+    node_ids = {node["id"]: f"n{index}" for index, node in enumerate(nodes, start=1)}
+    diagram_edges = [
+        {
+            "fromId": node_ids[edge["from"]],
+            "toId": node_ids[edge["to"]],
+            "fromLabel": _mermaid_label(edge["from"]),
+            "toLabel": _mermaid_label(edge["to"]),
+            "label": _mermaid_label(edge["type"]),
+        }
+        for edge in edges
+        if edge["from"] in node_ids and edge["to"] in node_ids
+    ]
+
+    external_edges = []
+    external_ids: dict[str, str] = {}
+    next_external_index = 1
+    for integration in external_integrations:
+        dependency = integration["dependency"]
+        if dependency not in external_ids:
+            external_ids[dependency] = f"ext{next_external_index}"
+            next_external_index += 1
+        module_id = node_ids.get(integration["module"])
+        if not module_id:
+            continue
+        external_edges.append(
+            {
+                "fromId": module_id,
+                "toId": external_ids[dependency],
+                "fromLabel": _mermaid_label(integration["module"]),
+                "toLabel": _mermaid_label(dependency),
+                "label": "depends_on",
+            }
+        )
+
+    return {
+        "dependencyEdges": diagram_edges,
+        "externalEdges": external_edges,
+    }
+
+
+def _mermaid_label(value: str) -> str:
+    return (
+        str(value)
+        .replace("\\", "\\\\")
+        .replace('"', "&quot;")
+        .replace("\n", " ")
+        .strip()
+    )
 
 
 def _append_node(seen_nodes: set[str], nodes: list[dict], node: dict) -> None:
