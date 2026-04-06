@@ -14,7 +14,25 @@ from ...core.models import AstArtifact, FunctionArgument, FunctionNode, QueryInf
 
 ADAPTER_NAME = "coldfusion-demo-adapter"
 ADAPTER_VERSION = "0.2.0"
-PARSER = get_parser("html")
+PARSER = None
+
+
+def _parser():
+    global PARSER
+    if PARSER is None:
+        try:
+            PARSER = get_parser("html")
+        except Exception as exc:
+            raise RuntimeError(
+                "Unable to initialize the Tree-sitter HTML parser. "
+                "The tree-sitter-language-pack package may be trying to download parser assets "
+                "from GitHub and your machine rejected the TLS certificate chain. "
+                "On Windows this often happens behind a corporate proxy or custom root CA. "
+                "Retry after fixing Python/pip certificate trust, or run in an environment that can "
+                "reach GitHub releases. Original error: "
+                f"{exc}"
+            ) from exc
+    return PARSER
 
 
 def discover_source(source_root: Path) -> dict:
@@ -62,7 +80,7 @@ def demo_slice_from_discovery(discovery: dict, selection_method: str = "all_disc
 def parse_file(path: Path) -> AstArtifact:
     """Parse one ColdFusion file into a deterministic AST-like artifact."""
     source_bytes = path.read_bytes()
-    tree = PARSER.parse(source_bytes)
+    tree = _parser().parse(source_bytes)
     root = tree.root_node
     elements = [child for child in root.children if child.type == "element"]
 
