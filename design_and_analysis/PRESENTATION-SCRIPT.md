@@ -25,7 +25,7 @@ Use arrow keys or the Next button to advance. Each section below tells you what'
 
 > Before I walk through the proposed pipeline, let me frame where we are today. The current approach has hit real constraints:
 >
-> **AI hallucination** — ColdFusion source was fed directly to AI. The output was hallucinated documentation. The client rejected it.
+> **AI hallucination** — ColdFusion source was fed directly to AI. The output was hallucinated documentation. The output required significant rework.
 >
 > **Manual extraction** — Business rules had to be captured through multiple in-person sessions with the original developers.
 >
