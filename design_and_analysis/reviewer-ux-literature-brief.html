@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviewer UX Brief for AI-Assisted Legacy Modernization</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 0.45in 0.52in;
+    }
+
+    :root {
+      --ink: #17212b;
+      --muted: #4a5a6a;
+      --line: #ced8e3;
+      --accent: #0b6b8a;
+      --soft: #eef6f9;
+      --warn: #8f4f00;
+      --warn-soft: #fff4e8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      line-height: 1.3;
+      font-size: 10pt;
+      background: white;
+    }
+
+    h1, h2, h3, p, ul, ol, table {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: 20pt;
+      line-height: 1.08;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 12.4pt;
+      margin: 13px 0 7px;
+      color: var(--accent);
+      page-break-after: avoid;
+    }
+
+    h3 {
+      font-size: 10.5pt;
+      margin: 10px 0 5px;
+      page-break-after: avoid;
+    }
+
+    p, li {
+      color: var(--ink);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 10.8pt;
+      max-width: 90%;
+      margin-bottom: 12px;
+    }
+
+    .meta {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 8.6pt;
+    }
+
+    .callout {
+      background: var(--soft);
+      border: 1px solid #c6dbe4;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin: 11px 0;
+    }
+
+    .warn {
+      background: var(--warn-soft);
+      border-color: #e3c49c;
+      border-left-color: var(--warn);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #fbfdff;
+      page-break-inside: avoid;
+    }
+
+    .card h3 {
+      margin-bottom: 6px;
+    }
+
+    .tight ul, .tight ol {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 4px;
+      page-break-inside: avoid;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 6px 7px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #f3f7fa;
+      font-weight: 700;
+    }
+
+    .small {
+      font-size: 8.4pt;
+      color: var(--muted);
+    }
+
+    .page {
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      page-break-after: auto;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+      font-size: 8.6pt;
+      color: var(--muted);
+    }
+
+    code {
+      font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 0.94em;
+    }
+
+    a {
+      color: #0b5d91;
+      text-decoration: none;
+      word-break: break-word;
+    }
+
+    .sources li {
+      margin-bottom: 4px;
+    }
+
+    .mono {
+      font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 0.96em;
+    }
+  </style>
+</head>
+<body>
+  <section class="page">
+    <h1>Reviewer UX Brief for AI-Assisted Legacy Modernization</h1>
+    <p class="subtitle">
+      A condensed synthesis of architecture-description standards, requirements engineering guidance,
+      human-AI interaction guidelines, explainability guidance, and software inspection practice.
+      The objective is practical: make a legacy-system review process usable with sparse documentation,
+      limited reviewers, and low tolerance for cognitive overload.
+    </p>
+    <div class="meta">
+      <span>Scope: reviewer experience for generated modernization artifacts</span>
+      <span>Target length: 5 pages max</span>
+      <span>Prepared: April 11, 2026</span>
+    </div>
+
+    <div class="callout">
+      <strong>Bottom line</strong><br>
+      The best review process is not architecture-first. It is <strong>capability-based, requirements-centered,
+      and exception-driven</strong>. Architecture views help reviewers orient themselves, but the main artifact
+      for approval should be a short, evidence-backed business requirements pack.
+    </div>
+
+    <h2>What The Literature Converges On</h2>
+    <div class="grid-2">
+      <div class="card tight">
+        <h3>1. Different reviewers need different views</h3>
+        <ul>
+          <li>Architecture descriptions should be built around stakeholder concerns and viewpoints, not one universal document.</li>
+          <li>One dense diagram is usually the wrong answer for mixed technical and business audiences.</li>
+          <li>Use only the views that answer an actual review question.</li>
+        </ul>
+      </div>
+      <div class="card tight">
+        <h3>2. Requirements are easier to review than structure</h3>
+        <ul>
+          <li>Reviewers are better at validating obligations, workflows, exceptions, and outcomes than large dependency graphs.</li>
+          <li>Generated requirements should be clear, bounded, necessary, and traceable.</li>
+          <li>Architecture should support those requirements, not compete with them.</li>
+        </ul>
+      </div>
+      <div class="card tight">
+        <h3>3. Explain for decisions, not completeness</h3>
+        <ul>
+          <li>Human-AI guidance consistently favors progressive disclosure over dumping full system reasoning into the main flow.</li>
+          <li>Default reviewers need concise context, the proposed interpretation, uncertainty, and an easy correction path.</li>
+          <li>Evidence should be one click away, not always-on.</li>
+        </ul>
+      </div>
+      <div class="card tight">
+        <h3>4. Limited reviewer time is a design constraint</h3>
+        <ul>
+          <li>Formal review literature treats reviewer attention as scarce and defect-oriented.</li>
+          <li>The process should surface high-risk, low-confidence, and high-impact items first.</li>
+          <li>Everything else should be batchable or spot-checkable.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <strong>Implication for your use case</strong><br>
+      If the generated output starts with a giant source architecture document, reviewers will burn time
+      understanding the artifact itself. If it starts with a capability summary and 5-12 requirement cards,
+      they can spend time validating the system.
+    </div>
+
+    <h2>Recommended Review Hierarchy</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Primary question</th>
+          <th>Audience</th>
+          <th>Default visibility</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Business requirements</strong></td>
+          <td>What must the system do?</td>
+          <td>Business reviewers, architects, senior engineers</td>
+          <td>Always visible</td>
+        </tr>
+        <tr>
+          <td><strong>Workflow / sequence view</strong></td>
+          <td>How does a critical journey unfold?</td>
+          <td>Mixed reviewers</td>
+          <td>Visible when needed</td>
+        </tr>
+        <tr>
+          <td><strong>Architecture context</strong></td>
+          <td>Where does this capability live and what does it touch?</td>
+          <td>Architects, engineers</td>
+          <td>Visible as supporting context</td>
+        </tr>
+        <tr>
+          <td><strong>Evidence / traceability</strong></td>
+          <td>Why does the system think this requirement exists?</td>
+          <td>Analysts, engineers, SMEs</td>
+          <td>On demand only</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="page">
+    <h2>Recommended Review Process</h2>
+    <p>
+      Review should happen in <strong>small capability slices</strong>, not as a whole-system documentation exercise.
+      A capability slice is something like <em>order submission</em>, <em>customer onboarding</em>, or
+      <em>report distribution</em>, rather than a code module or file tree.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Stage</th>
+          <th>What happens</th>
+          <th>Why this is practical</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. Machine draft</strong></td>
+          <td>Generate draft requirements, one workflow view, one context view, and an evidence bundle for each capability.</td>
+          <td>Keeps the AI output bounded and review-shaped.</td>
+        </tr>
+        <tr>
+          <td><strong>2. Analyst scrub</strong></td>
+          <td>A technical analyst removes obvious duplicates, fixes naming, groups related requirements, and marks likely low-value noise.</td>
+          <td>Protects scarce reviewers from spending time on cleanup.</td>
+        </tr>
+        <tr>
+          <td><strong>3. Priority scoring</strong></td>
+          <td>Score each item by business impact, confidence, change risk, and reviewer uncertainty.</td>
+          <td>Lets the process be exception-driven rather than exhaustive.</td>
+        </tr>
+        <tr>
+          <td><strong>4. Live review</strong></td>
+          <td>Review only the highest-value items in a 30-45 minute session, capability by capability.</td>
+          <td>Fits the reality of limited reviewer availability.</td>
+        </tr>
+        <tr>
+          <td><strong>5. Structured resolution</strong></td>
+          <td>Every item ends as <span class="mono">confirmed</span>, <span class="mono">corrected</span>, <span class="mono">unclear</span>, or <span class="mono">deferred</span>.</td>
+          <td>Avoids comments with no decision outcome.</td>
+        </tr>
+        <tr>
+          <td><strong>6. Incremental lock</strong></td>
+          <td>Freeze approved capability slices instead of waiting for whole-estate completeness.</td>
+          <td>Reduces coordination cost and allows progress despite legacy uncertainty.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Session Design For Limited Reviewers</h2>
+    <div class="grid-2">
+      <div class="card tight">
+        <h3>Before the meeting</h3>
+        <ul>
+          <li>Send one capability pack only.</li>
+          <li>Highlight top 3 unresolved items.</li>
+          <li>Pre-label low-confidence interpretations.</li>
+          <li>Keep the pre-read under 10 minutes.</li>
+        </ul>
+      </div>
+      <div class="card tight">
+        <h3>During the meeting</h3>
+        <ul>
+          <li>Start with business outcome, not the diagram.</li>
+          <li>Review the main flow first, exceptions second.</li>
+          <li>Escalate to evidence only when challenged.</li>
+          <li>Capture decisions live in structured form.</li>
+        </ul>
+      </div>
+      <div class="card tight">
+        <h3>After the meeting</h3>
+        <ul>
+          <li>Regenerate only changed requirement cards.</li>
+          <li>Send unresolved questions to SMEs only.</li>
+          <li>Track drift between approved requirements and later architecture/code proposals.</li>
+        </ul>
+      </div>
+      <div class="card tight">
+        <h3>Default review thresholds</h3>
+        <ul>
+          <li>5-12 substantive requirement cards per pack.</li>
+          <li>30-45 minutes per live session.</li>
+          <li>No more than 2 diagrams by default.</li>
+          <li>Only 1 capability in active review at a time per reviewer group.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Practical rule</strong><br>
+      Reviewers should never need to understand the full architecture to validate a capability. If they do,
+      the review pack is too dense or sliced at the wrong level.
+    </div>
+  </section>
+
+  <section class="page">
+    <h2>What Documentation Should Be Generated</h2>
+    <p>
+      Generate documentation in layers, with each layer optimized for a different decision. The key is not
+      “more documentation”; it is <strong>purpose-specific documentation</strong>.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Artifact</th>
+          <th>Purpose</th>
+          <th>Main audience</th>
+          <th>Required content</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Review index</strong></td>
+          <td>Portfolio view of all capabilities and review status</td>
+          <td>Leads, coordinators</td>
+          <td>Capability name, owner, status, confidence, top risk, next action</td>
+        </tr>
+        <tr>
+          <td><strong>Capability review pack</strong></td>
+          <td>Main approval artifact</td>
+          <td>All reviewers</td>
+          <td>Business summary, 5-12 requirement cards, top exceptions, top open questions</td>
+        </tr>
+        <tr>
+          <td><strong>Workflow / sequence view</strong></td>
+          <td>Clarify main and exception paths</td>
+          <td>Mixed reviewers</td>
+          <td>Actors, trigger, path, exception branch, key data/state handoffs</td>
+        </tr>
+        <tr>
+          <td><strong>Context / architecture view</strong></td>
+          <td>Orient the reviewer structurally</td>
+          <td>Architects, engineers</td>
+          <td>Subsystems, external systems, shared stores, hotspots</td>
+        </tr>
+        <tr>
+          <td><strong>Evidence appendix</strong></td>
+          <td>Justify inferred requirements</td>
+          <td>Analysts, SMEs</td>
+          <td>Source paths, facts, queries, config references, confidence rationale</td>
+        </tr>
+        <tr>
+          <td><strong>Decision log</strong></td>
+          <td>Preserve corrections and rationale</td>
+          <td>All downstream users</td>
+          <td>Decision, reviewer, date, reason, impacted requirement(s)</td>
+        </tr>
+        <tr>
+          <td><strong>Open questions register</strong></td>
+          <td>Manage unresolved uncertainty</td>
+          <td>SMEs, coordinators</td>
+          <td>Question, impact, owner, deadline, related capability</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>What A Capability Review Pack Should Contain</h2>
+    <div class="grid-2">
+      <div class="card tight">
+        <h3>Page 1: Business summary</h3>
+        <ul>
+          <li>Capability name and why it exists</li>
+          <li>Primary actors</li>
+          <li>Business outcome</li>
+          <li>Main systems/data involved</li>
+          <li>Top 3 known risks or unknowns</li>
+        </ul>
+      </div>
+      <div class="card tight">
+        <h3>Page 2: Requirement cards</h3>
+        <ul>
+          <li>Trigger</li>
+          <li>Conditions / preconditions</li>
+          <li>Expected outcome</li>
+          <li>Exceptions</li>
+          <li>Confidence and evidence link</li>
+        </ul>
+      </div>
+      <div class="card tight">
+        <h3>Optional support</h3>
+        <ul>
+          <li>One workflow / sequence diagram</li>
+          <li>One simple context diagram</li>
+          <li>Only include hotspot diagrams when they explain a specific risk</li>
+        </ul>
+      </div>
+      <div class="card tight">
+        <h3>Decision footer</h3>
+        <ul>
+          <li>Confirmed items</li>
+          <li>Corrected items</li>
+          <li>Deferred items</li>
+          <li>Questions sent to SME</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <strong>Do not generate as default review artifacts</strong><br>
+      One giant source architecture document, full dependency graph exports, raw fact dumps,
+      raw AI prose, or a monolithic BRD for the whole estate.
+    </div>
+  </section>
+
+  <section class="page">
+    <h2>Reviewer UX Rules To Minimize Cognitive Overload</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Rule</th>
+          <th>Why it matters</th>
+          <th>Practical implementation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Start with the task, not the model</strong></td>
+          <td>Reviewers care about validating business behavior, not model internals.</td>
+          <td>Default screen opens with summary + requirement cards.</td>
+        </tr>
+        <tr>
+          <td><strong>Use progressive disclosure</strong></td>
+          <td>Human-AI guidance warns against showing full explanation up front.</td>
+          <td>Hide evidence, source mappings, and low-level details behind expandable sections.</td>
+        </tr>
+        <tr>
+          <td><strong>Show uncertainty explicitly</strong></td>
+          <td>Trust improves when ambiguity is visible rather than implied away.</td>
+          <td>Label items as inferred, low confidence, or unresolved.</td>
+        </tr>
+        <tr>
+          <td><strong>Make correction cheap</strong></td>
+          <td>Reviewer effort should go into decisions, not navigation or rewriting.</td>
+          <td>Provide structured edits: rename, change condition, add exception, mark unknown.</td>
+        </tr>
+        <tr>
+          <td><strong>Keep diagrams sparse and purposeful</strong></td>
+          <td>Diagrams help only when they answer a specific concern.</td>
+          <td>Use one context view and one dynamic/workflow view by default.</td>
+        </tr>
+        <tr>
+          <td><strong>Separate review from investigation</strong></td>
+          <td>Mixing both creates overload and derails sessions.</td>
+          <td>Move deep evidence walks and parser disputes into offline follow-up.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Suggested Decision States</h2>
+    <div class="grid-2">
+      <div class="card tight">
+        <h3>Requirement state</h3>
+        <ul>
+          <li><span class="mono">draft</span></li>
+          <li><span class="mono">needs-review</span></li>
+          <li><span class="mono">confirmed</span></li>
+          <li><span class="mono">corrected</span></li>
+          <li><span class="mono">deferred</span></li>
+          <li><span class="mono">locked</span></li>
+        </ul>
+      </div>
+      <div class="card tight">
+        <h3>Question state</h3>
+        <ul>
+          <li><span class="mono">open</span></li>
+          <li><span class="mono">needs-sme</span></li>
+          <li><span class="mono">resolved</span></li>
+          <li><span class="mono">accepted-risk</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>Metrics Worth Tracking</h2>
+    <ul>
+      <li>Average review time per capability</li>
+      <li>Percentage of draft requirements confirmed without edit</li>
+      <li>Percentage requiring correction</li>
+      <li>Number of unresolved SME escalations</li>
+      <li>Time from first draft to locked review pack</li>
+      <li>Drift between locked requirements and later target design / verification failures</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Success criterion</strong><br>
+      A reviewer should be able to answer “is this capability understood well enough to modernize?”
+      within one short session, without reading a system-wide architecture document.
+    </div>
+  </section>
+
+  <section>
+    <h2>Adoption Guidance And Source Trail</h2>
+    <h3>Recommended operating model</h3>
+    <ol>
+      <li>Generate review packs by capability.</li>
+      <li>Have one analyst scrub each pack before stakeholder review.</li>
+      <li>Make business requirements the main approval artifact.</li>
+      <li>Keep architecture views as orientation artifacts.</li>
+      <li>Use structured decisions and incremental locks.</li>
+      <li>Escalate only unresolved, high-impact questions to scarce SMEs.</li>
+    </ol>
+
+    <h3>Source list</h3>
+    <ul class="sources small">
+      <li>ISO/IEC/IEEE 42010:2022, architecture description and stakeholder viewpoints: <a href="https://www.iso.org/standard/74393.html">https://www.iso.org/standard/74393.html</a></li>
+      <li>ISO/IEC/IEEE 29148:2018, requirements engineering lifecycle processes: <a href="https://www.iso.org/standard/72089.html">https://www.iso.org/standard/72089.html</a></li>
+      <li>C4 Model introduction and diagram guidance: <a href="https://c4model.com/introduction">https://c4model.com/introduction</a> and <a href="https://c4model.com/diagrams">https://c4model.com/diagrams</a></li>
+      <li>Microsoft Guidelines for Human-AI Interaction / HAX Toolkit: <a href="https://www.microsoft.com/en-us/research/publication/guidelines-for-human-ai-interaction/">https://www.microsoft.com/en-us/research/publication/guidelines-for-human-ai-interaction/</a> and <a href="https://www.microsoft.com/en-us/haxtoolkit/">https://www.microsoft.com/en-us/haxtoolkit/</a></li>
+      <li>Google PAIR Guidebook patterns for human-centered AI UX: <a href="https://pair.withgoogle.com/guidebook-v2/patterns">https://pair.withgoogle.com/guidebook-v2/patterns</a></li>
+      <li>NIST, Four Principles of Explainable Artificial Intelligence: <a href="https://www.nist.gov/publications/four-principles-explainable-artificial-intelligence">https://www.nist.gov/publications/four-principles-explainable-artificial-intelligence</a></li>
+      <li>NIST, AI Use Taxonomy: A Human-Centered Approach: <a href="https://www.nist.gov/publications/ai-use-taxonomy-human-centered-approach">https://www.nist.gov/publications/ai-use-taxonomy-human-centered-approach</a></li>
+      <li>NASA-STD-8739.9, Software Formal Inspections Standard: <a href="https://ntrs.nasa.gov/citations/20180004877">https://ntrs.nasa.gov/citations/20180004877</a></li>
+      <li>ONS Service Manual, diagrams guidance: <a href="https://service-manual.ons.gov.uk/content/content-types/diagrams">https://service-manual.ons.gov.uk/content/content-types/diagrams</a></li>
+      <li>SEBoK discussion of views and viewpoints as stakeholder concern mechanisms: <a href="https://sebokwiki.org/wiki/Guide_to_the_Systems_Engineering_Body_of_Knowledge_(SEBoK)">https://sebokwiki.org/wiki/Guide_to_the_Systems_Engineering_Body_of_Knowledge_(SEBoK)</a></li>
+    </ul>
+
+    <div class="footer-note">
+      This brief is a synthesis, not a standard. It intentionally translates the source material into one practical
+      recommendation for AI-assisted modernization reviews: short capability packs, progressive disclosure, structured
+      reviewer decisions, and evidence on demand.
+    </div>
+  </section>
+</body>
+</html>

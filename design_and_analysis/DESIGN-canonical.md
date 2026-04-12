@@ -339,6 +339,15 @@ The source architecture artifact is graph-shaped even when persisted as JSON. It
 
 The canonical persisted file should be `source-architecture.json`. A deterministic `source-architecture.md` review document must be generated from that JSON using templates and fixed rendering rules. The Markdown file is not hand-authored and must not be treated as a second source of truth.
 
+Architecture diagrams are necessary but not sufficient. For large estates, no single diagram remains readable enough to serve as the primary review surface. The system should therefore generate multiple architecture views from the same artifact, such as:
+
+- high-level subsystem diagrams
+- focused dependency views for hotspots
+- sequence or workflow views for critical paths
+- integration and shared-state views
+
+Those views exist to orient reviewers and expose structure. They are not the main business-validation artifact.
+
 Required fields:
 
 - `semanticLockRef`
@@ -352,6 +361,39 @@ Required fields:
 - `externalIntegrations`
 - `migrationHotspots`
 - `reviewNotes`
+- `derivedRequirementRefs`
+
+#### Business requirements artifact
+
+Business-readable requirements derived from reviewed semantics and the source architecture artifact.
+
+This artifact is the primary stakeholder review surface for behavior validation. It should express what the system does today in clear business language, with links back to supporting semantics and architecture evidence. The architecture views explain how the system is organized; the business requirements explain what must be preserved or intentionally changed.
+
+The canonical persisted files should be partitioned requirement artifacts plus a deterministic review pack, for example:
+
+- `business-requirements/index.json`
+- `business-requirements/modules/<module>.json`
+- `business-requirements/index.md`
+- `business-requirements/modules/<module>.md`
+
+Required fields:
+
+- `requirementId`
+- `title`
+- `moduleRef`
+- `requirementType`
+- `statement`
+- `preconditions`
+- `triggers`
+- `expectedOutcome`
+- `exceptions`
+- `evidenceRefs`
+- `sourceSemanticRefs`
+- `sourceArchitectureRefs`
+- `confidence`
+- `reviewStatus`
+- `corrections`
+- `openQuestions`
 
 #### Target architecture artifact
 
@@ -554,6 +596,14 @@ This stage exists for two reasons:
 - humans need an understandable as-is architecture before approving a to-be design
 - downstream target-architecture design needs a machine-consumable model of the current system
 
+For complex systems, "understandable" cannot mean one dense diagram. The review output from this phase should be a package:
+
+- architecture views for structure and dependency orientation
+- sequence and workflow views for critical end-to-end behavior
+- a business requirements pack that states the legacy system's obligations in reviewer-friendly language
+
+The business requirements pack is the primary validation surface. Reviewers should spend most of their time confirming, correcting, and prioritizing those requirements. Diagrams support that review by showing where each requirement lives and what it touches.
+
 Inputs:
 
 - semantic lock
@@ -563,7 +613,8 @@ Inputs:
 
 Outputs:
 
-- source architecture document for stakeholder review
+- source architecture review pack for stakeholder orientation
+- business requirements review pack for stakeholder validation
 - source architecture artifact for downstream pipeline consumption
 - source architecture lock after approval
 
@@ -582,6 +633,16 @@ The source architecture document should be generated from the same underlying ar
 - where the major dependency boundaries are
 - which modules are tightly coupled
 - which areas are highest risk for extraction, migration, or cutover
+- which architecture views correspond to which requirement groups
+
+The business requirements pack should be generated from locked semantics plus the source architecture artifact. It should explain:
+
+- what the business expects the system to do
+- which workflows, validations, and exception paths are in scope
+- which requirements are high-confidence versus open-question items
+- which requirements map to which modules, interfaces, data stores, and hotspots
+
+The target architecture and later verification stages should consume these reviewed business requirements as first-class downstream inputs, not just the architecture graph alone.
 
 ### Source architecture storage strategy
 
@@ -604,8 +665,10 @@ For review and approval:
 
 - `source-architecture.json` is canonical
 - `source-architecture.md` is a deterministic rendered view
+- business requirements JSON artifacts are canonical for reviewer-approved behavioral obligations
+- business requirements Markdown documents are deterministic rendered views
 - the Markdown must always be regenerable from the JSON artifact
-- no separate AI-written summary document is required
+- no separate freeform AI-written summary document is required
 
 ### Automated storage escalation policy
 

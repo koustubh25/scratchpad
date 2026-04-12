@@ -1099,8 +1099,8 @@
           <text x="156" y="248" font-family="IBM Plex Sans, sans-serif" font-size="9" fill="#657180">tight coupling</text>
           <rect x="248" y="237" width="36" height="14" rx="7" fill="#b35000"/><text x="266" y="248" font-family="IBM Plex Sans, sans-serif" font-size="8" font-weight="700" fill="white" text-anchor="middle">risk</text>
           <!-- footer -->
-          <text x="160" y="276" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">Graph-shaped model of the current system</text>
-          <text x="160" y="292" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#657180" text-anchor="middle">Derived from locked semantics — not source re-reading</text>
+          <text x="160" y="276" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">One view in a broader review pack</text>
+          <text x="160" y="292" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#657180" text-anchor="middle">Architecture + sequences + business requirements from locked semantics</text>
         </svg>`,
         srcArchReview: `<svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
           <rect x="6" y="6" width="308" height="308" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
@@ -1140,8 +1140,8 @@
           <path d="M167 146 L160 190" stroke="#c96b15" stroke-width="2" fill="none" stroke-dasharray="6 3" stroke-linecap="round" opacity="0.4"/>
           <path d="M256 146 L190 190" stroke="#c96b15" stroke-width="2" fill="none" stroke-dasharray="6 3" stroke-linecap="round" opacity="0.4"/>
           <!-- footer -->
-          <text x="160" y="278" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">Stakeholders validate before target design</text>
-          <text x="160" y="294" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#657180" text-anchor="middle">Corrections and open questions are structured records</text>
+          <text x="160" y="278" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#c96b15" text-anchor="middle">Diagrams orient; requirements carry the review</text>
+          <text x="160" y="294" font-family="IBM Plex Sans, sans-serif" font-size="10" fill="#657180" text-anchor="middle">Corrections and open questions become structured business requirements</text>
         </svg>`,
         srcArchLock: `<svg viewBox="0 0 320 330" xmlns="http://www.w3.org/2000/svg">
           <rect x="6" y="6" width="308" height="318" rx="18" fill="#fffdf8" stroke="#d9c3a0" />
@@ -1722,9 +1722,9 @@
       { title: "Semantic derivation", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5"], edges: ["e1","e2","e3","e4"], visual: "semanticDerive", output: "", role: "", why: "", chips: ["AI-Assisted", "Semantics"], previously: "Business rules extracted through multiple manual sessions with original developers. No confidence scoring, no evidence tracking." },
       { title: "Semantic review", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6"], edges: ["e1","e2","e3","e4","e5"], visual: "semanticReview", output: "", role: "", why: "", chips: ["Approval Gate", "Semantic Review"], previously: "Reviewers saw everything with equal priority. Limited developer time spent reviewing low-risk items alongside critical ones." },
       { title: "Semantic lock", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7"], edges: ["e1","e2","e3","e4","e5","e6"], visual: "lockCert", output: "", role: "", why: "", chips: ["Locked", "Governed"] },
-      { title: "Source architecture", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8"], edges: ["e1","e2","e3","e4","e5","e6","e7"], visual: "srcArch", output: "", role: "", why: "", chips: ["As-Is", "Architecture"], previously: "Architecture docs generated one at a time — manually identifying code entry points, then prompting AI per file. Slow, fragile, no versioning or lock certificates." },
-      { title: "Source architecture review", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8"], visual: "srcArchReview", output: "", role: "", why: "", chips: ["Baseline Review", "Architecture"] },
-      { title: "Source architecture lock", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9"], visual: "srcArchLock", output: "", role: "", why: "", chips: ["Locked", "As-Is Baseline"] },
+      { title: "Source architecture", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8"], edges: ["e1","e2","e3","e4","e5","e6","e7"], visual: "srcArch", output: "", role: "", why: "", chips: ["As-Is", "Architecture", "Business Requirements"], previously: "Architecture docs generated one at a time — manually identifying code entry points, then prompting AI per file. Slow, fragile, no versioning or lock certificates." },
+      { title: "Source architecture review", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8"], visual: "srcArchReview", output: "", role: "", why: "", chips: ["Baseline Review", "Requirements Review"] },
+      { title: "Source architecture lock", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9"], visual: "srcArchLock", output: "", role: "", why: "", chips: ["Locked", "As-Is Baseline", "Reviewed Requirements"] },
       { title: "Target stack choice", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10"], visual: "targetStack", output: "", role: "", why: "", chips: ["Target Stack", "Human Choice"] },
       { title: "Target architecture", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11","n12"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10","e11"], visual: "targetArch", output: "", role: "", why: "", chips: ["To-Be", "Design"] },
       { title: "Architecture review", copy: "", points: [], nodes: ["n0","n1","n2","n3","n4","n5","n6","n7","n8","n9","n10","n11","n12","n13"], edges: ["e1","e2","e3","e4","e5","e6","e7","e8","e9","e10","e11","e12"], visual: "targetArchReview", output: "", role: "", why: "", chips: ["Approval Gate", "Target Design"] },

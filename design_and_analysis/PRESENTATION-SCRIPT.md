@@ -147,9 +147,11 @@ Use arrow keys or the Next button to advance. Each section below tells you what'
 
 **Say:**
 
-> The pipeline generates the full source architecture from locked semantics. Module boundaries, data flows, dependency maps — all derived, all versioned, all traceable.
+> The pipeline generates the source architecture from locked semantics, but this is where we need to be precise: diagrams alone are not enough for a large estate.
 >
-> Previously, this was 200+ files generated one at a time by manually identifying code entry points and prompting AI per file. No versioning, no invalidation tracking. Here, if a semantic rule changes, the pipeline knows exactly which architecture documents are stale.
+> For complex systems, a single Mermaid diagram becomes unreadable. So the output is a review pack: high-level architecture views, focused hotspot views, sequence flows for critical journeys, and a generated business requirements pack derived from the same locked understanding.
+>
+> Previously, this was 200+ files generated one at a time by manually identifying code entry points and prompting AI per file. No versioning, no invalidation tracking. Here, if a semantic rule changes, the pipeline knows exactly which architecture views and which requirement documents are stale.
 
 ---
 
@@ -157,7 +159,9 @@ Use arrow keys or the Next button to advance. Each section below tells you what'
 
 **Say:**
 
-> Another human review gate. The source architecture is reviewed against the locked semantics. Reviewers can verify that the architecture actually reflects the approved business rules.
+> Another human review gate. The diagrams help reviewers orient themselves, but the main thing they review is the generated business requirements: what the system does, what rules it enforces, and where the open questions are.
+>
+> That is the strong review surface, because stakeholders can revise requirements directly while still having traceability back to the semantics and architecture evidence.
 
 ---
 
@@ -165,7 +169,7 @@ Use arrow keys or the Next button to advance. Each section below tells you what'
 
 **Say:**
 
-> Once approved, the source architecture gets its own lock certificate. We now have a locked, versioned baseline — the "as-is" is fully captured and governed.
+> Once approved, the source architecture and the reviewed business requirements become the locked, versioned baseline. The "as-is" is now captured in both structural and business terms, and both are governed.
 
 ---
 
@@ -185,7 +189,7 @@ Use arrow keys or the Next button to advance. Each section below tells you what'
 
 **Say:**
 
-> Given the locked source architecture and the chosen target stack, the AI generates the target architecture. It maps source modules to target services, proposes API boundaries, and designs the data migration strategy.
+> Given the locked source architecture, the reviewed business requirements, and the chosen target stack, the AI generates the target architecture. It maps source modules to target services, proposes API boundaries, and designs the data migration strategy.
 >
 > Because it's working from locked, verified inputs — not raw source — the output is grounded and traceable.
 
@@ -235,7 +239,7 @@ Use arrow keys or the Next button to advance. Each section below tells you what'
 
 **Say:**
 
-> Verification compares the generated target against locked semantics — not just syntax, but behavior. The pipeline runs scenarios and classifies results as pass, acceptable drift, or failure. In this example, an auth session mismatch is caught: legacy uses cookies, target returns JWT only. That's a real behavioral difference that needs resolution.
+> Verification compares the generated target against locked semantics and the approved business requirements — not just syntax, but behavior. The pipeline runs scenarios and classifies results as pass, acceptable drift, or failure. In this example, an auth session mismatch is caught: legacy uses cookies, target returns JWT only. That's a real behavioral difference that needs resolution.
 
 ---
 
@@ -300,6 +304,8 @@ Use arrow keys or the Next button to advance. Each section below tells you what'
 > That's the full pipeline. It addresses every constraint we saw in the current approach: no more hallucinated docs, no more manual extraction sessions, no more one-at-a-time file generation, and no dependency on specific AI models for the core parsing work.
 >
 > The source architecture that took months is now governed, versioned, and reproducible. And the agent evolution path gives us a clear roadmap for increasing automation without sacrificing governance.
+>
+> More importantly, the review conversation shifts from "can anyone read this diagram?" to "are these business requirements correct?" That's the artifact stakeholders can actually revise with confidence.
 
 ---
 

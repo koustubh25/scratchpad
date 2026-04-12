@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mock Capability Review Pack - Order Submission</title>
+  <style>
+    :root {
+      --bg: #f5efe5;
+      --panel: rgba(255, 251, 244, 0.94);
+      --ink: #1f2933;
+      --muted: #66717f;
+      --line: #d9c5a4;
+      --panel-line: rgba(183, 155, 112, 0.58);
+      --soft: #fff7e8;
+      --shadow: 0 18px 40px rgba(63, 42, 16, 0.12);
+      --brand: #c96b15;
+      --brand-soft: #fff0d2;
+      --done: #4b8f60;
+      --done-soft: #e8f6ea;
+      --warn: #b35000;
+      --warn-soft: #fff1e3;
+      --info: #0d6c87;
+      --info-soft: #eaf6fb;
+      --chip: rgba(201, 107, 21, 0.08);
+      --chip-border: rgba(201, 107, 21, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(201, 107, 21, 0.12), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(75, 143, 96, 0.10), transparent 26%),
+        linear-gradient(180deg, #faf6ef 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      max-width: 1460px;
+      margin: 0 auto;
+      padding: 28px 24px 42px;
+    }
+
+    .hero,
+    .toolbar,
+    .section,
+    .sidebar-card {
+      background: var(--panel);
+      border: 1px solid var(--panel-line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 24px 24px 20px;
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .hero-top {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.8fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 40px;
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+      max-width: 860px;
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.5;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: var(--chip);
+      border: 1px solid var(--chip-border);
+      color: #8c4d13;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .review-ask {
+      background: linear-gradient(180deg, rgba(255, 244, 219, 0.96), rgba(255, 250, 242, 0.96));
+      border: 1px solid rgba(201, 107, 21, 0.28);
+      border-radius: 20px;
+      padding: 16px;
+    }
+
+    .review-ask strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--brand);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .review-ask p {
+      margin: 0 0 12px;
+      line-height: 1.5;
+    }
+
+    .review-ask ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink);
+      line-height: 1.45;
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .metric {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(183, 155, 112, 0.36);
+    }
+
+    .metric .value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+      align-items: center;
+    }
+
+    .toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .toolbar-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    .toggle,
+    .ghost {
+      border: 1px solid rgba(183, 155, 112, 0.5);
+      border-radius: 999px;
+      background: white;
+      color: var(--ink);
+      padding: 9px 14px;
+      cursor: pointer;
+      transition: all 180ms ease;
+    }
+
+    .toggle.active,
+    .ghost:hover,
+    .toggle:hover {
+      background: var(--brand-soft);
+      border-color: rgba(201, 107, 21, 0.35);
+      color: #8e4f15;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) 320px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .main {
+      display: grid;
+      gap: 18px;
+    }
+
+    .section {
+      padding: 22px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 760px;
+    }
+
+    .section-tag {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--info-soft);
+      color: var(--info);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .info-card,
+    .requirement-card,
+    .question-card,
+    .decision-card {
+      border: 1px solid rgba(183, 155, 112, 0.34);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 16px;
+    }
+
+    .info-card h3,
+    .requirement-card h3,
+    .question-card h3,
+    .decision-card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .info-card p,
+    .question-card p,
+    .decision-card p {
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .info-card ul,
+    .question-card ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      line-height: 1.45;
+    }
+
+    .requirements-grid,
+    .questions-grid,
+    .decisions-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .requirements-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .requirement-card {
+      position: relative;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .requirement-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px rgba(77, 52, 21, 0.09);
+    }
+
+    .requirement-card[data-state="confirmed"] {
+      border-color: rgba(75, 143, 96, 0.38);
+      background: linear-gradient(180deg, rgba(232, 246, 234, 0.88), rgba(255, 255, 255, 0.8));
+    }
+
+    .requirement-card[data-state="corrected"] {
+      border-color: rgba(201, 107, 21, 0.38);
+      background: linear-gradient(180deg, rgba(255, 240, 210, 0.9), rgba(255, 255, 255, 0.8));
+    }
+
+    .requirement-card[data-state="deferred"] {
+      border-color: rgba(179, 80, 0, 0.34);
+      background: linear-gradient(180deg, rgba(255, 241, 227, 0.92), rgba(255, 255, 255, 0.8));
+    }
+
+    .card-top,
+    .card-meta,
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .card-top {
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .req-id {
+      color: var(--muted);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .badge.state-needs-review {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+
+    .badge.state-confirmed {
+      background: var(--done-soft);
+      color: var(--done);
+    }
+
+    .badge.state-corrected {
+      background: var(--brand-soft);
+      color: var(--brand);
+    }
+
+    .badge.state-deferred {
+      background: #f3e7de;
+      color: #8a4b1a;
+    }
+
+    .badge.conf-high {
+      background: #edf8f0;
+      color: #317247;
+    }
+
+    .badge.conf-medium {
+      background: #eaf6fb;
+      color: #0d6c87;
+    }
+
+    .badge.conf-low {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+
+    .badge.priority-critical {
+      background: #f8e7e2;
+      color: #944121;
+    }
+
+    .badge.priority-important {
+      background: #f9f1e1;
+      color: #916019;
+    }
+
+    .badge.priority-standard {
+      background: #eef1f5;
+      color: #4f6276;
+    }
+
+    .card-meta {
+      margin-bottom: 12px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .detail {
+      border-radius: 14px;
+      background: rgba(247, 244, 238, 0.92);
+      padding: 12px;
+      min-height: 110px;
+    }
+
+    .detail strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 11px;
+      color: #7a5a31;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .detail p {
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    .card-actions {
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .action-set {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .action-btn,
+    .evidence-btn {
+      border: 1px solid rgba(183, 155, 112, 0.44);
+      border-radius: 999px;
+      background: white;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: all 180ms ease;
+    }
+
+    .action-btn:hover,
+    .evidence-btn:hover {
+      border-color: rgba(201, 107, 21, 0.35);
+      background: var(--brand-soft);
+      color: #8e4f15;
+    }
+
+    .evidence {
+      display: none;
+      margin-top: 14px;
+      border-top: 1px solid rgba(183, 155, 112, 0.34);
+      padding-top: 14px;
+    }
+
+    .requirement-card.evidence-open .evidence {
+      display: block;
+    }
+
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .evidence-box {
+      border-radius: 14px;
+      background: rgba(234, 246, 251, 0.76);
+      border: 1px solid rgba(13, 108, 135, 0.18);
+      padding: 12px;
+    }
+
+    .evidence-box strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 11px;
+      color: var(--info);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .evidence-box p,
+    .evidence-box ul {
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    .evidence-box ul {
+      padding-left: 18px;
+    }
+
+    .diagram-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .diagram-card {
+      border: 1px solid rgba(183, 155, 112, 0.34);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.75);
+      padding: 16px;
+    }
+
+    .diagram-card h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .diagram-card p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .diagram-card svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .architecture-notes,
+    .workflow-notes {
+      margin: 0;
+      padding-left: 18px;
+      line-height: 1.45;
+    }
+
+    .question-card {
+      background: linear-gradient(180deg, rgba(255, 244, 227, 0.95), rgba(255, 255, 255, 0.78));
+    }
+
+    .question-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .decision-card small,
+    .question-card small,
+    .muted {
+      color: var(--muted);
+    }
+
+    aside {
+      position: sticky;
+      top: 20px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .sidebar-card {
+      padding: 16px;
+    }
+
+    .sidebar-card h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .summary-tile {
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(183, 155, 112, 0.32);
+      padding: 12px;
+    }
+
+    .summary-tile .value {
+      display: block;
+      font-size: 23px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .summary-tile .label {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .jump-list,
+    .sidebar-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .jump-list a {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(183, 155, 112, 0.28);
+      color: var(--ink);
+      transition: all 180ms ease;
+    }
+
+    .jump-list a:hover {
+      background: var(--brand-soft);
+      color: #8e4f15;
+      border-color: rgba(201, 107, 21, 0.28);
+    }
+
+    .sidebar-list li {
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(183, 155, 112, 0.28);
+      padding: 10px 12px;
+      line-height: 1.4;
+    }
+
+    .sidebar-note {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .footer-note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 1180px) {
+      .hero-top,
+      .layout,
+      .diagram-grid,
+      .overview-grid,
+      .card-grid,
+      .evidence-grid,
+      .hero-metrics {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        padding: 18px 14px 28px;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      .section,
+      .hero {
+        padding: 18px;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .page {
+        max-width: none;
+        padding: 0;
+      }
+
+      .toolbar,
+      aside {
+        display: none;
+      }
+
+      .hero,
+      .section,
+      .sidebar-card,
+      .info-card,
+      .requirement-card,
+      .question-card,
+      .decision-card,
+      .diagram-card {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+
+      .evidence {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="eyebrow">Mock Capability Review Pack</div>
+      <div class="hero-top">
+        <div>
+          <h1>Order Submission</h1>
+          <p class="subtitle">
+            This is a concept demo for one capability only. It shows the review experience, not the full modernization
+            system: summary first, requirement decisions second, architecture as supporting context, and evidence only
+            when a reviewer wants to challenge or inspect a claim.
+          </p>
+          <div class="chips">
+            <span class="chip">Capability pack</span>
+            <span class="chip">6 reviewable requirements</span>
+            <span class="chip">2 open questions</span>
+            <span class="chip">1 workflow view</span>
+            <span class="chip">1 context diagram</span>
+          </div>
+        </div>
+        <div class="review-ask">
+          <strong>What the reviewer is being asked</strong>
+          <p>Validate the business behavior of order submission. Do not try to reverse-engineer the whole legacy system from this page.</p>
+          <ul>
+            <li>Confirm the discount and payment rules.</li>
+            <li>Check whether timeout handling is correct.</li>
+            <li>Decide if manual override must always create an audit event.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="hero-metrics">
+        <div class="metric">
+          <div class="value">14 min</div>
+          <div class="label">Estimated review time for the first pass</div>
+        </div>
+        <div class="metric">
+          <div class="value">3</div>
+          <div class="label">Priority items that need active attention</div>
+        </div>
+        <div class="metric">
+          <div class="value">81%</div>
+          <div class="label">Pack confidence before reviewer corrections</div>
+        </div>
+        <div class="metric">
+          <div class="value">1</div>
+          <div class="label">Known hotspot that affects migration risk</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <span class="toolbar-label">Requirement filter</span>
+        <button class="toggle active" data-filter="all" type="button">All</button>
+        <button class="toggle" data-filter="priority" type="button">Priority only</button>
+        <button class="toggle" data-filter="needs-review" type="button">Needs review</button>
+        <button class="toggle" data-filter="confirmed" type="button">Confirmed</button>
+        <button class="toggle" data-filter="corrected" type="button">Corrected</button>
+        <button class="toggle" data-filter="deferred" type="button">Deferred</button>
+      </div>
+      <div class="toolbar-group">
+        <button class="ghost" id="expandEvidence" type="button">Expand all evidence</button>
+        <button class="ghost" id="resetState" type="button">Reset demo state</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <main class="main">
+        <section class="section" id="summary">
+          <div class="section-head">
+            <div>
+              <h2>Capability Summary</h2>
+              <p>
+                The reviewer should be able to understand what this capability does before seeing any architectural detail.
+                The business language stays in front; technical context is kept short and concrete.
+              </p>
+            </div>
+            <div class="section-tag">Start Here</div>
+          </div>
+          <div class="overview-grid">
+            <div class="info-card">
+              <h3>Business outcome</h3>
+              <p>
+                Convert a checked shopping cart into a committed order, reserve inventory, take payment authorization,
+                and queue customer confirmation without forcing the reviewer to inspect the legacy code.
+              </p>
+            </div>
+            <div class="info-card">
+              <h3>Primary actors</h3>
+              <ul>
+                <li>B2B customer placing an order through the storefront</li>
+                <li>Call-center agent submitting an assisted order</li>
+                <li>Pricing and inventory services used as supporting systems</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h3>Systems touched</h3>
+              <ul>
+                <li>Checkout UI</li>
+                <li>Order processor</li>
+                <li>Pricing rules engine</li>
+                <li>Inventory adapter</li>
+                <li>Payment gateway</li>
+                <li>Notification queue</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <h3>Top review risks</h3>
+              <ul>
+                <li>Discount logic mixes customer contract pricing with promotional thresholds.</li>
+                <li>Gateway timeout handling may create duplicate or half-finished orders.</li>
+                <li>Manual price overrides may bypass audit requirements in some call-center flows.</li>
+              </ul>
+            </div>
+          </div>
+          <p class="footer-note">
+            This summary is intentionally short. It tells the reviewer what the capability is, what matters, and where to focus.
+          </p>
+        </section>
+
+        <section class="section" id="requirements">
+          <div class="section-head">
+            <div>
+              <h2>Business Requirements To Review</h2>
+              <p>
+                This is the main review surface. Requirement cards are short, decision-shaped, and evidence-backed.
+                Reviewers should be able to confirm, correct, or defer each item without reading prose walls.
+              </p>
+            </div>
+            <div class="section-tag">Primary Review Surface</div>
+          </div>
+
+          <div class="requirements-grid" id="requirementGrid">
+            <article class="requirement-card" data-id="REQ-OS-101" data-state="needs-review" data-initial-state="needs-review" data-priority="critical">
+              <div class="card-top">
+                <span class="req-id">REQ-OS-101</span>
+                <span class="badge state-needs-review state-badge">Needs review</span>
+              </div>
+              <h3>Apply contract pricing first, then apply a 15% bulk discount only when order subtotal exceeds $500 and no manual override exists.</h3>
+              <div class="card-meta">
+                <span class="badge priority-critical">Critical</span>
+                <span class="badge conf-medium">Confidence: Medium</span>
+                <span class="badge">Workflow: Pricing</span>
+              </div>
+              <div class="card-grid">
+                <div class="detail">
+                  <strong>Trigger</strong>
+                  <p>Customer or call-center agent submits the order after cart review.</p>
+                </div>
+                <div class="detail">
+                  <strong>Expected outcome</strong>
+                  <p>Pricing is recalculated once, using contract price where present and bulk discount only when threshold conditions are met.</p>
+                </div>
+                <div class="detail">
+                  <strong>Exception / concern</strong>
+                  <p>Manual override may bypass the threshold rule. Reviewer should confirm whether that is intended.</p>
+                </div>
+              </div>
+              <div class="card-actions">
+                <div class="action-set">
+                  <button class="action-btn" data-action="confirm" type="button">Confirm</button>
+                  <button class="action-btn" data-action="correct" type="button">Mark corrected</button>
+                  <button class="action-btn" data-action="defer" type="button">Defer</button>
+                </div>
+                <button class="evidence-btn" data-toggle="evidence" type="button">Show evidence</button>
+              </div>
+              <div class="evidence">
+                <div class="evidence-grid">
+                  <div class="evidence-box">
+                    <strong>Why it was inferred</strong>
+                    <p>The rule appears across pricing helper code, a SQL promotion lookup, and a call-center override branch.</p>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Source references</strong>
+                    <ul>
+                      <li><code>checkout/submitOrder.cfm</code></li>
+                      <li><code>pricing/applyDiscount.cfc</code></li>
+                      <li><code>sql/getContractPrice.sql</code></li>
+                    </ul>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Why confidence is medium</strong>
+                    <p>Threshold logic is clear, but override handling branches differently in storefront and call-center flows.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="requirement-card" data-id="REQ-OS-102" data-state="confirmed" data-initial-state="confirmed" data-priority="standard">
+              <div class="card-top">
+                <span class="req-id">REQ-OS-102</span>
+                <span class="badge state-confirmed state-badge">Confirmed</span>
+              </div>
+              <h3>Reject order submission when the authenticated session has expired, and redirect the user to re-authenticate before any payment attempt.</h3>
+              <div class="card-meta">
+                <span class="badge priority-standard">Standard</span>
+                <span class="badge conf-high">Confidence: High</span>
+                <span class="badge">Workflow: Authentication</span>
+              </div>
+              <div class="card-grid">
+                <div class="detail">
+                  <strong>Trigger</strong>
+                  <p>User submits order with an invalid or missing checkout session.</p>
+                </div>
+                <div class="detail">
+                  <strong>Expected outcome</strong>
+                  <p>No order record or payment attempt occurs. User is routed back to login and returned to checkout after success.</p>
+                </div>
+                <div class="detail">
+                  <strong>Exception / concern</strong>
+                  <p>None in the current evidence set. This rule is stable and already low risk.</p>
+                </div>
+              </div>
+              <div class="card-actions">
+                <div class="action-set">
+                  <button class="action-btn" data-action="confirm" type="button">Confirm</button>
+                  <button class="action-btn" data-action="correct" type="button">Mark corrected</button>
+                  <button class="action-btn" data-action="defer" type="button">Defer</button>
+                </div>
+                <button class="evidence-btn" data-toggle="evidence" type="button">Show evidence</button>
+              </div>
+              <div class="evidence">
+                <div class="evidence-grid">
+                  <div class="evidence-box">
+                    <strong>Why it was inferred</strong>
+                    <p>Guard clause occurs before order creation and before payment gateway invocation.</p>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Source references</strong>
+                    <ul>
+                      <li><code>checkout/submitOrder.cfm</code></li>
+                      <li><code>auth/sessionGuard.cfc</code></li>
+                    </ul>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Why confidence is high</strong>
+                    <p>Behavior is consistent across both storefront and assisted ordering entry points.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="requirement-card" data-id="REQ-OS-103" data-state="needs-review" data-initial-state="needs-review" data-priority="critical">
+              <div class="card-top">
+                <span class="req-id">REQ-OS-103</span>
+                <span class="badge state-needs-review state-badge">Needs review</span>
+              </div>
+              <h3>If payment authorization times out after the gateway call is issued, the system should create a recoverable pending-payment order rather than silently failing.</h3>
+              <div class="card-meta">
+                <span class="badge priority-critical">Critical</span>
+                <span class="badge conf-low">Confidence: Low</span>
+                <span class="badge">Workflow: Payment</span>
+              </div>
+              <div class="card-grid">
+                <div class="detail">
+                  <strong>Trigger</strong>
+                  <p>Gateway request returns timeout or no callback within the allowed window.</p>
+                </div>
+                <div class="detail">
+                  <strong>Expected outcome</strong>
+                  <p>Order is recorded in a recoverable state so operations can reconcile or resume without duplicate charging.</p>
+                </div>
+                <div class="detail">
+                  <strong>Exception / concern</strong>
+                  <p>The legacy code shows both a draft-save path and a hard-fail path. This needs explicit reviewer confirmation.</p>
+                </div>
+              </div>
+              <div class="card-actions">
+                <div class="action-set">
+                  <button class="action-btn" data-action="confirm" type="button">Confirm</button>
+                  <button class="action-btn" data-action="correct" type="button">Mark corrected</button>
+                  <button class="action-btn" data-action="defer" type="button">Defer</button>
+                </div>
+                <button class="evidence-btn" data-toggle="evidence" type="button">Show evidence</button>
+              </div>
+              <div class="evidence">
+                <div class="evidence-grid">
+                  <div class="evidence-box">
+                    <strong>Why it was inferred</strong>
+                    <p>A timeout branch writes to a recovery table in one path, but an older branch returns an error without persistence.</p>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Source references</strong>
+                    <ul>
+                      <li><code>checkout/submitOrder.cfm</code></li>
+                      <li><code>payment/gatewayAdapter.cfc</code></li>
+                      <li><code>ops/saveFailedPayment.cfc</code></li>
+                    </ul>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Why confidence is low</strong>
+                    <p>Behavior differs by gateway adapter version and may have drifted through partial hotfixes.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="requirement-card" data-id="REQ-OS-104" data-state="corrected" data-initial-state="corrected" data-priority="important">
+              <div class="card-top">
+                <span class="req-id">REQ-OS-104</span>
+                <span class="badge state-corrected state-badge">Corrected</span>
+              </div>
+              <h3>Reserve inventory only after payment authorization succeeds; if payment fails, release any temporary hold before returning control to the user.</h3>
+              <div class="card-meta">
+                <span class="badge priority-important">Important</span>
+                <span class="badge conf-medium">Confidence: Medium</span>
+                <span class="badge">Workflow: Inventory</span>
+              </div>
+              <div class="card-grid">
+                <div class="detail">
+                  <strong>Trigger</strong>
+                  <p>Payment response returns success, failure, or timeout after initial stock validation.</p>
+                </div>
+                <div class="detail">
+                  <strong>Expected outcome</strong>
+                  <p>Inventory reservation becomes durable only after payment success. Temporary hold is dropped on failure.</p>
+                </div>
+                <div class="detail">
+                  <strong>Exception / concern</strong>
+                  <p>Earlier draft said reservation happened before payment. Reviewer corrected that to a temporary hold model.</p>
+                </div>
+              </div>
+              <div class="card-actions">
+                <div class="action-set">
+                  <button class="action-btn" data-action="confirm" type="button">Confirm</button>
+                  <button class="action-btn" data-action="correct" type="button">Mark corrected</button>
+                  <button class="action-btn" data-action="defer" type="button">Defer</button>
+                </div>
+                <button class="evidence-btn" data-toggle="evidence" type="button">Show evidence</button>
+              </div>
+              <div class="evidence">
+                <div class="evidence-grid">
+                  <div class="evidence-box">
+                    <strong>Why it was inferred</strong>
+                    <p>Inventory adapter performs a temporary hold during validation, then a final reserve call after gateway success.</p>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Source references</strong>
+                    <ul>
+                      <li><code>inventory/checkAndHold.cfc</code></li>
+                      <li><code>inventory/finalizeReservation.cfc</code></li>
+                    </ul>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Correction history</strong>
+                    <p>SME review changed the wording from "reserve inventory before payment" to "temporary hold before payment."</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="requirement-card" data-id="REQ-OS-105" data-state="deferred" data-initial-state="deferred" data-priority="important">
+              <div class="card-top">
+                <span class="req-id">REQ-OS-105</span>
+                <span class="badge state-deferred state-badge">Deferred</span>
+              </div>
+              <h3>Every manual price override by a call-center agent must generate an audit entry containing supervisor approval and reason code.</h3>
+              <div class="card-meta">
+                <span class="badge priority-important">Important</span>
+                <span class="badge conf-medium">Confidence: Medium</span>
+                <span class="badge">Workflow: Audit</span>
+              </div>
+              <div class="card-grid">
+                <div class="detail">
+                  <strong>Trigger</strong>
+                  <p>Call-center user manually edits price or applies an override code during order submission.</p>
+                </div>
+                <div class="detail">
+                  <strong>Expected outcome</strong>
+                  <p>System writes user, reason code, supervisor approval, timestamp, and order reference to audit storage.</p>
+                </div>
+                <div class="detail">
+                  <strong>Exception / concern</strong>
+                  <p>Evidence for supervisor approval is inconsistent. This is deferred pending SME confirmation.</p>
+                </div>
+              </div>
+              <div class="card-actions">
+                <div class="action-set">
+                  <button class="action-btn" data-action="confirm" type="button">Confirm</button>
+                  <button class="action-btn" data-action="correct" type="button">Mark corrected</button>
+                  <button class="action-btn" data-action="defer" type="button">Defer</button>
+                </div>
+                <button class="evidence-btn" data-toggle="evidence" type="button">Show evidence</button>
+              </div>
+              <div class="evidence">
+                <div class="evidence-grid">
+                  <div class="evidence-box">
+                    <strong>Why it was inferred</strong>
+                    <p>Audit write is obvious, but supervisor approval appears only in some branches and in a help-text file.</p>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Source references</strong>
+                    <ul>
+                      <li><code>callcenter/overridePrice.cfm</code></li>
+                      <li><code>audit/writeAuditEvent.cfc</code></li>
+                      <li><code>help/callcenter_override.txt</code></li>
+                    </ul>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Why it is deferred</strong>
+                    <p>This rule matters for governance, but the current evidence set does not prove whether supervisor approval is mandatory.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="requirement-card" data-id="REQ-OS-106" data-state="needs-review" data-initial-state="needs-review" data-priority="standard">
+              <div class="card-top">
+                <span class="req-id">REQ-OS-106</span>
+                <span class="badge state-needs-review state-badge">Needs review</span>
+              </div>
+              <h3>Queue the confirmation email asynchronously after the order is committed so that email delivery failure does not block order creation.</h3>
+              <div class="card-meta">
+                <span class="badge priority-standard">Standard</span>
+                <span class="badge conf-high">Confidence: High</span>
+                <span class="badge">Workflow: Notification</span>
+              </div>
+              <div class="card-grid">
+                <div class="detail">
+                  <strong>Trigger</strong>
+                  <p>Order commit succeeds and order number is available.</p>
+                </div>
+                <div class="detail">
+                  <strong>Expected outcome</strong>
+                  <p>Email is queued for downstream processing. Order response returns even if the mail service is unavailable.</p>
+                </div>
+                <div class="detail">
+                  <strong>Exception / concern</strong>
+                  <p>Reviewer should confirm whether backorder status changes the template or suppresses immediate email.</p>
+                </div>
+              </div>
+              <div class="card-actions">
+                <div class="action-set">
+                  <button class="action-btn" data-action="confirm" type="button">Confirm</button>
+                  <button class="action-btn" data-action="correct" type="button">Mark corrected</button>
+                  <button class="action-btn" data-action="defer" type="button">Defer</button>
+                </div>
+                <button class="evidence-btn" data-toggle="evidence" type="button">Show evidence</button>
+              </div>
+              <div class="evidence">
+                <div class="evidence-grid">
+                  <div class="evidence-box">
+                    <strong>Why it was inferred</strong>
+                    <p>Queue write occurs after order commit and before response serialization, with failure logged non-blockingly.</p>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Source references</strong>
+                    <ul>
+                      <li><code>notifications/enqueueConfirmation.cfc</code></li>
+                      <li><code>checkout/submitOrder.cfm</code></li>
+                    </ul>
+                  </div>
+                  <div class="evidence-box">
+                    <strong>Why confidence is high</strong>
+                    <p>Behavior is consistently implemented and supported by the integration queue schema.</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="workflow">
+          <div class="section-head">
+            <div>
+              <h2>Workflow View</h2>
+              <p>
+                One dynamic view is enough here. It shows the main path and the most important exception path without
+                asking the reviewer to parse implementation detail.
+              </p>
+            </div>
+            <div class="section-tag">Supporting Context</div>
+          </div>
+          <div class="diagram-grid">
+            <div class="diagram-card">
+              <h3>Main flow with timeout branch</h3>
+              <p>Sequence is simplified on purpose. It exists to clarify behavior, not to mirror every method call.</p>
+              <svg viewBox="0 0 900 360" role="img" aria-label="Order submission workflow">
+                <defs>
+                  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 Z" fill="#c96b15"></path>
+                  </marker>
+                </defs>
+                <rect x="20" y="18" width="860" height="324" rx="22" fill="#fffdf8" stroke="#ddc6a0" stroke-width="2"/>
+                <g font-family="IBM Plex Sans, sans-serif" font-size="12" fill="#1f2933" font-weight="700">
+                  <text x="72" y="48" text-anchor="middle">Customer</text>
+                  <text x="250" y="48" text-anchor="middle">Checkout UI</text>
+                  <text x="430" y="48" text-anchor="middle">Order Processor</text>
+                  <text x="610" y="48" text-anchor="middle">Payment Gateway</text>
+                  <text x="790" y="48" text-anchor="middle">Inventory / Queue</text>
+                </g>
+                <g stroke="#cdb188" stroke-width="2" stroke-dasharray="7 6">
+                  <line x1="72" y1="60" x2="72" y2="320"/>
+                  <line x1="250" y1="60" x2="250" y2="320"/>
+                  <line x1="430" y1="60" x2="430" y2="320"/>
+                  <line x1="610" y1="60" x2="610" y2="320"/>
+                  <line x1="790" y1="60" x2="790" y2="320"/>
+                </g>
+                <g stroke="#c96b15" stroke-width="3" marker-end="url(#arrow)" fill="none">
+                  <line x1="72" y1="96" x2="250" y2="96"/>
+                  <line x1="250" y1="134" x2="430" y2="134"/>
+                  <line x1="430" y1="172" x2="610" y2="172"/>
+                  <line x1="610" y1="210" x2="430" y2="210"/>
+                  <line x1="430" y1="248" x2="790" y2="248"/>
+                  <line x1="430" y1="284" x2="250" y2="284"/>
+                </g>
+                <g font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#5d6672">
+                  <text x="160" y="88" text-anchor="middle">Submit order</text>
+                  <text x="340" y="126" text-anchor="middle">Validate session, price, stock</text>
+                  <text x="520" y="164" text-anchor="middle">Authorize payment</text>
+                  <text x="520" y="202" text-anchor="middle">Success or timeout response</text>
+                  <text x="610" y="240" text-anchor="middle">Reserve inventory and queue confirmation</text>
+                  <text x="340" y="276" text-anchor="middle">Return order number or recoverable status</text>
+                </g>
+                <rect x="536" y="98" width="244" height="84" rx="16" fill="#fff1e3" stroke="#b35000" stroke-width="2"/>
+                <text x="658" y="124" font-family="IBM Plex Sans, sans-serif" font-size="12" font-weight="700" fill="#b35000" text-anchor="middle">Exception path to validate</text>
+                <text x="658" y="148" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#1f2933" text-anchor="middle">If timeout occurs after gateway call,</text>
+                <text x="658" y="166" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#1f2933" text-anchor="middle">does the system persist a pending-payment order</text>
+                <text x="658" y="184" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#1f2933" text-anchor="middle">or fail without a recovery artifact?</text>
+              </svg>
+            </div>
+            <div class="diagram-card">
+              <h3>What reviewers should take from this</h3>
+              <ul class="workflow-notes">
+                <li>The main path is straightforward: validate, authorize, persist, reserve, notify.</li>
+                <li>The main review risk is the timeout branch after the payment call.</li>
+                <li>Reviewers do not need more detail unless they disagree with the requirement cards.</li>
+                <li>Sequence view exists to explain the requirement decisions, not replace them.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="architecture">
+          <div class="section-head">
+            <div>
+              <h2>Architecture Context</h2>
+              <p>
+                This diagram is intentionally light. It shows where the capability lives, the main collaborators,
+                and the one hotspot that matters to migration planning.
+              </p>
+            </div>
+            <div class="section-tag">Orientation Only</div>
+          </div>
+          <div class="diagram-grid">
+            <div class="diagram-card">
+              <h3>Order submission context</h3>
+              <svg viewBox="0 0 900 360" role="img" aria-label="Order submission architecture context">
+                <rect x="20" y="18" width="860" height="324" rx="22" fill="#fffdf8" stroke="#ddc6a0" stroke-width="2"/>
+                <g font-family="IBM Plex Sans, sans-serif" font-weight="700" fill="#1f2933" text-anchor="middle">
+                  <rect x="82" y="44" width="180" height="66" rx="18" fill="#ffffff" stroke="#b79b70" stroke-width="2"/>
+                  <text x="172" y="72" font-size="15">Checkout UI</text>
+                  <text x="172" y="92" font-size="12" fill="#657180">Customer and agent entry point</text>
+
+                  <rect x="352" y="44" width="200" height="74" rx="18" fill="#fff0d2" stroke="#c96b15" stroke-width="2.4"/>
+                  <text x="452" y="72" font-size="16">Order Processor</text>
+                  <text x="452" y="94" font-size="12" fill="#8e4f15">Capability under review</text>
+
+                  <rect x="650" y="44" width="170" height="66" rx="18" fill="#ffffff" stroke="#b79b70" stroke-width="2"/>
+                  <text x="735" y="72" font-size="15">Payment Gateway</text>
+                  <text x="735" y="92" font-size="12" fill="#657180">External authorization</text>
+
+                  <rect x="94" y="182" width="156" height="62" rx="18" fill="#ffffff" stroke="#b79b70" stroke-width="2"/>
+                  <text x="172" y="208" font-size="15">Pricing Rules</text>
+                  <text x="172" y="228" font-size="12" fill="#657180">Contract + promo logic</text>
+
+                  <rect x="372" y="184" width="160" height="62" rx="18" fill="#fff1e3" stroke="#b35000" stroke-width="2.6"/>
+                  <text x="452" y="210" font-size="15" fill="#b35000">Shared Order DB</text>
+                  <text x="452" y="230" font-size="12" fill="#8f4f00">Migration hotspot</text>
+
+                  <rect x="650" y="182" width="170" height="62" rx="18" fill="#ffffff" stroke="#b79b70" stroke-width="2"/>
+                  <text x="735" y="208" font-size="15">Inventory + Queue</text>
+                  <text x="735" y="228" font-size="12" fill="#657180">Reservation + notifications</text>
+                </g>
+                <g stroke="#4b8f60" stroke-width="3" fill="none">
+                  <path d="M262 76 H352"/>
+                  <path d="M552 76 H650"/>
+                  <path d="M172 110 V182"/>
+                  <path d="M452 118 V184"/>
+                  <path d="M552 118 C630 118 650 160 650 182"/>
+                </g>
+                <g stroke="#c96b15" stroke-width="3" stroke-dasharray="8 5" fill="none">
+                  <path d="M250 214 H372"/>
+                  <path d="M532 214 H650"/>
+                </g>
+                <g font-family="IBM Plex Sans, sans-serif" font-size="11" fill="#657180">
+                  <text x="307" y="66" text-anchor="middle">submit</text>
+                  <text x="600" y="66" text-anchor="middle">authorize</text>
+                  <text x="310" y="204" text-anchor="middle">pricing dependency</text>
+                  <text x="590" y="204" text-anchor="middle">reserve / notify</text>
+                  <text x="488" y="156" text-anchor="start" fill="#b35000">shared state and partial writes</text>
+                </g>
+              </svg>
+            </div>
+            <div class="diagram-card">
+              <h3>What this adds to the review</h3>
+              <ul class="architecture-notes">
+                <li>Shows the capability boundary clearly enough for mixed audiences.</li>
+                <li>Makes the shared order database visible as the migration hotspot.</li>
+                <li>Explains why payment timeout and partial persistence are risky.</li>
+                <li>Stops before the diagram becomes a whole-system map that nobody wants to review.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="questions">
+          <div class="section-head">
+            <div>
+              <h2>Open Questions And Risks</h2>
+              <p>
+                These are the items that should consume scarce SME time. Everything else should be reviewable from the pack
+                without escalation.
+              </p>
+            </div>
+            <div class="section-tag">Escalate Narrowly</div>
+          </div>
+          <div class="questions-grid">
+            <article class="question-card">
+              <div class="question-top">
+                <h3>Does timeout create a recoverable pending-payment order?</h3>
+                <span class="badge priority-critical">Critical</span>
+              </div>
+              <p>Current evidence shows both a recovery path and a hard-fail path. Reviewer decision is needed before target design can treat timeout recovery as required behavior.</p>
+            </article>
+            <article class="question-card">
+              <div class="question-top">
+                <h3>Is supervisor approval mandatory for all manual overrides or only above a value threshold?</h3>
+                <span class="badge priority-important">Important</span>
+              </div>
+              <p>The audit write is clear. The approval requirement is not. This should go only to the call-center SME, not the full reviewer group.</p>
+            </article>
+            <article class="question-card">
+              <div class="question-top">
+                <h3>Should confirmation email be delayed when inventory is partially backordered?</h3>
+                <span class="badge priority-standard">Standard</span>
+              </div>
+              <p>Base queueing behavior is clear. Only the backorder variant needs confirmation, and it does not block the rest of the capability review.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section" id="decisions">
+          <div class="section-head">
+            <div>
+              <h2>Decision Log</h2>
+              <p>
+                Review output should become structured decisions, not loose comments. The log below is partly pre-seeded and
+                partly interactive so the demo can show how the pack changes as reviewers act.
+              </p>
+            </div>
+            <div class="section-tag">Structured Review Output</div>
+          </div>
+          <div class="decisions-grid" id="decisionLog">
+            <article class="decision-card">
+              <h3>REQ-OS-104 corrected during prior SME pass</h3>
+              <p>The original draft said inventory was reserved before payment. SME corrected this to a temporary hold before payment and a durable reserve after authorization succeeds.</p>
+              <small>Reviewer: J. Chen · Reason: reflects actual recovery flow</small>
+            </article>
+            <article class="decision-card">
+              <h3>Review note</h3>
+              <p>Architecture context and workflow views are supporting evidence. The approval target remains the requirement set.</p>
+              <small>Pack guidance</small>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <aside>
+        <section class="sidebar-card">
+          <h3>Pack status</h3>
+          <div class="summary-grid">
+            <div class="summary-tile">
+              <span class="value" id="countReview">3</span>
+              <span class="label">Need review</span>
+            </div>
+            <div class="summary-tile">
+              <span class="value" id="countConfirmed">1</span>
+              <span class="label">Confirmed</span>
+            </div>
+            <div class="summary-tile">
+              <span class="value" id="countCorrected">1</span>
+              <span class="label">Corrected</span>
+            </div>
+            <div class="summary-tile">
+              <span class="value" id="countDeferred">1</span>
+              <span class="label">Deferred</span>
+            </div>
+          </div>
+          <p class="footer-note">This sidebar updates as the requirement state changes so the demo feels like a real review surface.</p>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>How to use this pack</h3>
+          <ul class="sidebar-list">
+            <li>Start at the summary.</li>
+            <li>Review the requirement cards.</li>
+            <li>Use workflow and architecture only when a requirement needs more context.</li>
+            <li>Open evidence only when you need to challenge a claim.</li>
+          </ul>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>Jump to section</h3>
+          <nav>
+            <ul class="jump-list">
+              <li><a href="#summary">Capability summary</a></li>
+              <li><a href="#requirements">Requirements</a></li>
+              <li><a href="#workflow">Workflow view</a></li>
+              <li><a href="#architecture">Architecture context</a></li>
+              <li><a href="#questions">Open questions</a></li>
+              <li><a href="#decisions">Decision log</a></li>
+            </ul>
+          </nav>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>Why this is easier to review</h3>
+          <p class="sidebar-note">
+            The pack asks the reviewer to validate six requirement statements, not to decode a monolithic architecture document.
+            That is the central experience this mock is trying to convey.
+          </p>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const cards = Array.from(document.querySelectorAll(".requirement-card"));
+    const filterButtons = Array.from(document.querySelectorAll("[data-filter]"));
+    const countReview = document.getElementById("countReview");
+    const countConfirmed = document.getElementById("countConfirmed");
+    const countCorrected = document.getElementById("countCorrected");
+    const countDeferred = document.getElementById("countDeferred");
+    const decisionLog = document.getElementById("decisionLog");
+    const expandEvidenceBtn = document.getElementById("expandEvidence");
+    const resetStateBtn = document.getElementById("resetState");
+
+    const stateMeta = {
+      "needs-review": { label: "Needs review", className: "state-needs-review" },
+      confirmed: { label: "Confirmed", className: "state-confirmed" },
+      corrected: { label: "Corrected", className: "state-corrected" },
+      deferred: { label: "Deferred", className: "state-deferred" }
+    };
+
+    function updateCounts() {
+      const counts = {
+        "needs-review": 0,
+        confirmed: 0,
+        corrected: 0,
+        deferred: 0
+      };
+
+      cards.forEach((card) => {
+        counts[card.dataset.state] += 1;
+      });
+
+      countReview.textContent = counts["needs-review"];
+      countConfirmed.textContent = counts.confirmed;
+      countCorrected.textContent = counts.corrected;
+      countDeferred.textContent = counts.deferred;
+    }
+
+    function setCardState(card, state) {
+      card.dataset.state = state;
+      const badge = card.querySelector(".state-badge");
+      const meta = stateMeta[state];
+      badge.textContent = meta.label;
+      badge.className = `badge ${meta.className} state-badge`;
+      addDecision(card.dataset.id, meta.label);
+      updateCounts();
+      applyActiveFilter();
+    }
+
+    function addDecision(reqId, action) {
+      const item = document.createElement("article");
+      item.className = "decision-card";
+      item.innerHTML = `
+        <h3>${reqId} marked as ${action.toLowerCase()}</h3>
+        <p>This entry was added through the demo controls to show what a structured review outcome could look like.</p>
+        <small>Reviewer: Demo reviewer · Source: interactive pack</small>
+      `;
+      decisionLog.prepend(item);
+    }
+
+    function applyActiveFilter() {
+      const active = document.querySelector(".toggle.active");
+      const filter = active ? active.dataset.filter : "all";
+
+      cards.forEach((card) => {
+        let show = true;
+        if (filter === "priority") show = card.dataset.priority === "critical" || card.dataset.priority === "important";
+        if (filter === "needs-review") show = card.dataset.state === "needs-review";
+        if (filter === "confirmed") show = card.dataset.state === "confirmed";
+        if (filter === "corrected") show = card.dataset.state === "corrected";
+        if (filter === "deferred") show = card.dataset.state === "deferred";
+        card.classList.toggle("hidden", !show);
+      });
+    }
+
+    cards.forEach((card) => {
+      card.querySelectorAll("[data-action]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const action = button.dataset.action;
+          if (action === "confirm") setCardState(card, "confirmed");
+          if (action === "correct") setCardState(card, "corrected");
+          if (action === "defer") setCardState(card, "deferred");
+        });
+      });
+
+      const evidenceButton = card.querySelector("[data-toggle='evidence']");
+      evidenceButton.addEventListener("click", () => {
+        const isOpen = card.classList.toggle("evidence-open");
+        evidenceButton.textContent = isOpen ? "Hide evidence" : "Show evidence";
+      });
+    });
+
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        filterButtons.forEach((other) => other.classList.remove("active"));
+        button.classList.add("active");
+        applyActiveFilter();
+      });
+    });
+
+    expandEvidenceBtn.addEventListener("click", () => {
+      const shouldOpen = expandEvidenceBtn.dataset.state !== "open";
+      cards.forEach((card) => {
+        const btn = card.querySelector("[data-toggle='evidence']");
+        card.classList.toggle("evidence-open", shouldOpen);
+        btn.textContent = shouldOpen ? "Hide evidence" : "Show evidence";
+      });
+      expandEvidenceBtn.dataset.state = shouldOpen ? "open" : "closed";
+      expandEvidenceBtn.textContent = shouldOpen ? "Collapse all evidence" : "Expand all evidence";
+    });
+
+    resetStateBtn.addEventListener("click", () => {
+      cards.forEach((card) => {
+        card.classList.remove("evidence-open", "hidden");
+        const initialState = card.dataset.initialState;
+        const badge = card.querySelector(".state-badge");
+        const meta = stateMeta[initialState];
+        card.dataset.state = initialState;
+        badge.textContent = meta.label;
+        badge.className = `badge ${meta.className} state-badge`;
+        card.querySelector("[data-toggle='evidence']").textContent = "Show evidence";
+      });
+      filterButtons.forEach((other) => other.classList.remove("active"));
+      document.querySelector("[data-filter='all']").classList.add("active");
+      expandEvidenceBtn.dataset.state = "closed";
+      expandEvidenceBtn.textContent = "Expand all evidence";
+      updateCounts();
+      applyActiveFilter();
+    });
+
+    updateCounts();
+    applyActiveFilter();
+  </script>
+</body>
+</html>
