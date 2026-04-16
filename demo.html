@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PwC × IAG — Conversational Agent Demo</title>
+  <script defer src="https://www.gstatic.com/ces-console/fast/chat-messenger/prod/v1.15/chat-messenger.js"></script>
+  <link rel="stylesheet" href="https://www.gstatic.com/ces-console/fast/chat-messenger/prod/v1.15/themes/chat-messenger-default.css">
+  <link rel="stylesheet" href="https://www.gstatic.com/ces-console/fast/chat-messenger/prod/v1.15/themes/chat-messenger-layout.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --nrma-navy: #0d1f5c;
+      --pwc-orange: #d93f0b;
+      --text-light: #f0f2f8;
+      --text-muted: #8892b0;
+      --card-bg: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--nrma-navy);
+      color: var(--text-light);
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      height: 64px;
+      background: rgba(0,0,0,0.25);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .header-left { display: flex; align-items: center; gap: 20px; }
+
+    .logo-nrma { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+    .logo-nrma .badge { background: white; color: var(--nrma-navy); font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 4px; letter-spacing: 0.5px; }
+
+    .divider-v { width: 1px; height: 28px; background: var(--border); }
+    .demo-tag { font-size: 12px; color: var(--text-muted); }
+
+    .header-right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-muted); }
+    .pwc-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pwc-orange); }
+
+    .hero { padding: 80px 48px 64px; max-width: 900px; }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 12px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 24px;
+    }
+    .hero-eyebrow::before { content: ''; display: block; width: 24px; height: 2px; background: var(--pwc-orange); }
+
+    h1 { font-size: clamp(36px, 5vw, 56px); font-weight: 700; line-height: 1.1; letter-spacing: -1px; margin-bottom: 20px; }
+    h1 span { color: transparent; background: linear-gradient(90deg, #6eb4ff, #a78bfa); -webkit-background-clip: text; background-clip: text; }
+
+    .hero-sub { font-size: 17px; color: var(--text-muted); line-height: 1.6; max-width: 560px; }
+
+    .section { padding: 0 48px 80px; }
+    .section-label { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 20px; }
+
+    .moments { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+
+    .moment-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      user-select: none;
+    }
+    .moment-card:hover { border-color: rgba(110,180,255,0.3); background: rgba(255,255,255,0.07); transform: translateY(-2px); }
+    .moment-card.active { border-color: #6eb4ff; background: rgba(110,180,255,0.08); }
+    .moment-card.active .moment-num { color: #6eb4ff; }
+
+    .moment-num { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
+    .moment-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .moment-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+    .moment-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+
+    .moment-tag {
+      display: inline-block; font-size: 11px; font-weight: 600;
+      padding: 3px 8px; border-radius: 20px;
+      background: rgba(255,255,255,0.06); color: var(--text-muted);
+    }
+    .moment-tag.auth { color: #6eb4ff; background: rgba(110,180,255,0.1); }
+    .moment-tag.anon { color: #a78bfa; background: rgba(167,139,250,0.1); }
+
+    .launch-hint {
+      font-size: 11px; color: var(--text-muted); opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .moment-card:hover .launch-hint,
+    .moment-card.active .launch-hint { opacity: 1; }
+    .moment-card.active .launch-hint { color: #6eb4ff; }
+
+    footer {
+      padding: 24px 48px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <div class="logo-nrma"><span class="badge">NRMA</span> Insurance</div>
+      <div class="divider-v"></div>
+      <span class="demo-tag">Conversational Agent Demo</span>
+    </div>
+    <div class="header-right">
+      <div class="pwc-dot"></div>
+      PwC × IAG
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-eyebrow">Gemini · CX Agent Studio</div>
+    <h1>Insurance, <span>reimagined</span><br>through conversation.</h1>
+    <p class="hero-sub">A multi-agent system built on Google's CX Agent Studio — handling acquisition, claims, coverage questions, and renewals in natural language.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Click a moment to load it → then speak or type in the chat</div>
+    <div class="moments">
+      <div class="moment-card" data-moment="0" onclick="loadMoment('0')">
+        <div class="moment-num">MOMENT 0</div>
+        <div class="moment-title">First-time buyer</div>
+        <div class="moment-desc">Needs assessment, plan recommendation, and quote in under 2 minutes.</div>
+        <div class="moment-footer">
+          <span class="moment-tag anon">Anonymous</span>
+          <span class="launch-hint">▶ Load</span>
+        </div>
+      </div>
+      <div class="moment-card" data-moment="1" onclick="loadMoment('1')">
+        <div class="moment-num">MOMENT 1</div>
+        <div class="moment-title">Competitor switch</div>
+        <div class="moment-desc">Upload a competitor policy PDF. Gap analysis and savings estimate.</div>
+        <div class="moment-footer">
+          <span class="moment-tag anon">Anonymous</span>
+          <span class="launch-hint">▶ Load</span>
+        </div>
+      </div>
+      <div class="moment-card" data-moment="2" onclick="loadMoment('2')">
+        <div class="moment-num">MOMENT 2</div>
+        <div class="moment-title">Coverage question</div>
+        <div class="moment-desc">PDS-grounded answer with section citation. Proactive gap flagging.</div>
+        <div class="moment-footer">
+          <span class="moment-tag auth">Authenticated</span>
+          <span class="launch-hint">▶ Load</span>
+        </div>
+      </div>
+      <div class="moment-card" data-moment="2b" onclick="loadMoment('2b')">
+        <div class="moment-num">MOMENT 2B</div>
+        <div class="moment-title">Out of scope</div>
+        <div class="moment-desc">Guardrail — clean decline and correct redirect for non-insurance requests.</div>
+        <div class="moment-footer">
+          <span class="moment-tag auth">Authenticated</span>
+          <span class="launch-hint">▶ Load</span>
+        </div>
+      </div>
+      <div class="moment-card" data-moment="3" onclick="loadMoment('3')">
+        <div class="moment-num">MOMENT 3</div>
+        <div class="moment-title">Frustrated claim</div>
+        <div class="moment-desc">Instant status, empathy, escalation with a named case manager and commitment.</div>
+        <div class="moment-footer">
+          <span class="moment-tag auth">Authenticated</span>
+          <span class="launch-hint">▶ Load</span>
+        </div>
+      </div>
+      <div class="moment-card" data-moment="renewal" onclick="loadMoment('renewal')">
+        <div class="moment-num">RENEWAL</div>
+        <div class="moment-title">Proactive renewal</div>
+        <div class="moment-desc">Policy expiring in 14 days — surfaced on greeting, confirmed in conversation.</div>
+        <div class="moment-footer">
+          <span class="moment-tag auth">Authenticated</span>
+          <span class="launch-hint">▶ Load</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>PwC Australia · IAG Conversational Agent Prototype · April 2026</span>
+    <span>Powered by Google Gemini · CX Agent Studio</span>
+  </footer>
+
+  <script>
+    const DEPLOYMENT = "projects/390644356057/locations/us/apps/2f329a6f-2a19-4557-ade6-d1eba6f2bf2c/deployments/c732f031-cdcb-479f-b837-9379ba7dd3fe";
+
+    const MOMENTS = {
+      "0":       { is_authenticated: "false", customer_id: "", customer_name: "", policy_numbers: "", home_postcode: "", days_to_expiry: "0" },
+      "1":       { is_authenticated: "false", customer_id: "", customer_name: "", policy_numbers: "", home_postcode: "", days_to_expiry: "0" },
+      "2":       { is_authenticated: "true", customer_id: "CUST-001", customer_name: "Sarah Johnson", policy_numbers: "[POL-HOME-4821, POL-CAR-9034]", home_postcode: "2073", days_to_expiry: "90" },
+      "2b":      { is_authenticated: "true", customer_id: "CUST-001", customer_name: "Sarah Johnson", policy_numbers: "[POL-HOME-4821, POL-CAR-9034]", home_postcode: "2073", days_to_expiry: "90" },
+      "3":       { is_authenticated: "true", customer_id: "CUST-001", customer_name: "Sarah Johnson", policy_numbers: "[POL-HOME-4821, POL-CAR-9034]", home_postcode: "2073", days_to_expiry: "90" },
+      "renewal": { is_authenticated: "true", customer_id: "CUST-001", customer_name: "Sarah Johnson", policy_numbers: "[POL-HOME-4821, POL-CAR-9034]", home_postcode: "2073", days_to_expiry: "14" },
+    };
+
+    function loadMoment(key) {
+      // Reload page with moment param — guarantees a fresh session with correct variables
+      window.location.href = '?moment=' + key;
+    }
+
+    window.addEventListener("chat-messenger-loaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const key = params.get('moment') || '2';
+
+      // Highlight active card
+      document.querySelectorAll(".moment-card").forEach(c => c.classList.remove("active"));
+      const card = document.querySelector(`[data-moment="${key}"]`);
+      if (card) card.classList.add("active");
+
+      chatSdk.registerContext(
+        chatSdk.prebuilts.ces.createContext({
+          deploymentName: DEPLOYMENT,
+          variables: MOMENTS[key] || MOMENTS['2'],
+          tokenBroker: { enableTokenBroker: true, enableRecaptcha: false }
+        })
+      );
+    });
+  </script>
+
+  <chat-messenger url-allowlist="*">
+    <chat-messenger-container
+      chat-title="NRMA Insurance"
+      chat-title-icon="https://gstatic.com/dialogflow-console/common/assets/ccai-favicons/conversational_agents.png"
+      enable-file-upload
+      enable-audio-input
+    >
+      <chat-reset-session-button slot="titlebar-actions" title-text="Start new chat"></chat-reset-session-button>
+      <chat-toggle-dialog-button slot="titlebar-actions" title-text-expanded="Collapse" title-text-collapsed="Expand"></chat-toggle-dialog-button>
+      <chat-messenger-close-button slot="titlebar-actions" title-text="Close"></chat-messenger-close-button>
+    </chat-messenger-container>
+  </chat-messenger>
+
+</body>
+</html>
