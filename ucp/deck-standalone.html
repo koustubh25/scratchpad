@@ -1,0 +1,2907 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UCP Presentation PoC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+:root {
+  --bg-sand: #f5ead8;
+  --bg-cream: #fffaf2;
+  --graphite: #171210;
+  --graphite-soft: #37302b;
+  --coral: #d94d22;
+  --orange: #f06f24;
+  --green-deep: #084c36;
+  --green-bright: #0d6a4b;
+  --blue-accent: #2e7cf6;
+  --stroke-soft: #bfa68d;
+  --panel-fill: rgba(255, 253, 249, 0.98);
+  --shadow-soft: 0 18px 36px rgba(23, 18, 16, 0.14);
+}
+
+.icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+}
+
+.icon-label::before {
+  content: "";
+  width: 1.02em;
+  height: 1.02em;
+  flex: 0 0 1.02em;
+  background-color: currentColor;
+  opacity: 0.88;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.icon-label--store::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M4 9.5 5.2 5h13.6L20 9.5a2.5 2.5 0 0 1-2.4 2.5 2.8 2.8 0 0 1-2.1-.9 2.8 2.8 0 0 1-2.1.9 2.8 2.8 0 0 1-2.1-.9 2.8 2.8 0 0 1-2.1.9A2.5 2.5 0 0 1 4 9.5Zm1 4h14v5.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V13.5Zm3 1.5v5h4v-5H8Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M4 9.5 5.2 5h13.6L20 9.5a2.5 2.5 0 0 1-2.4 2.5 2.8 2.8 0 0 1-2.1-.9 2.8 2.8 0 0 1-2.1.9 2.8 2.8 0 0 1-2.1-.9 2.8 2.8 0 0 1-2.1.9A2.5 2.5 0 0 1 4 9.5Zm1 4h14v5.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V13.5Zm3 1.5v5h4v-5H8Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--agent::before,
+.icon-label--sparkles::before,
+.icon-label--badge::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='m12 2 1.6 4.4L18 8l-4.4 1.6L12 14l-1.6-4.4L6 8l4.4-1.6L12 2Zm6 10 1 2.7 2.7 1-2.7 1-1 2.8-1-2.8-2.8-1 2.8-1 1-2.7ZM6 13l1.2 3.1L10.3 17l-3.1 1.2L6 21.3l-1.2-3.1L1.7 17l3.1-.9L6 13Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='m12 2 1.6 4.4L18 8l-4.4 1.6L12 14l-1.6-4.4L6 8l4.4-1.6L12 2Zm6 10 1 2.7 2.7 1-2.7 1-1 2.8-1-2.8-2.8-1 2.8-1 1-2.7ZM6 13l1.2 3.1L10.3 17l-3.1 1.2L6 21.3l-1.2-3.1L1.7 17l3.1-.9L6 13Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--search::before,
+.icon-label--compass::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Zm6.6 10.2 3.7 3.7-1.4 1.4-3.7-3.7 1.4-1.4Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M10.5 3a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15Zm0 2a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Zm6.6 10.2 3.7 3.7-1.4 1.4-3.7-3.7 1.4-1.4Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--tag::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 10.5V4.8A1.8 1.8 0 0 1 4.8 3H10l9 9-7 7-9-9Zm4-4A1.5 1.5 0 1 0 7 9.5a1.5 1.5 0 0 0 0-3Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 10.5V4.8A1.8 1.8 0 0 1 4.8 3H10l9 9-7 7-9-9Zm4-4A1.5 1.5 0 1 0 7 9.5a1.5 1.5 0 0 0 0-3Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--grid::before,
+.icon-label--layers::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--compare::before,
+.icon-label--arrows::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M7 7h10l-2.5-2.5L16 3l5 5-5 5-1.5-1.5L17 9H7V7Zm10 10H7l2.5 2.5L8 21l-5-5 5-5 1.5 1.5L7 15h10v2Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M7 7h10l-2.5-2.5L16 3l5 5-5 5-1.5-1.5L17 9H7V7Zm10 10H7l2.5 2.5L8 21l-5-5 5-5 1.5 1.5L7 15h10v2Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--message::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--network::before,
+.icon-label--mcp::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M12 3a3 3 0 0 1 2.8 2h2.7a2.5 2.5 0 1 1 0 2h-2l2 3.5a3 3 0 0 1 2.5 3 3 3 0 1 1-5.6 1.5H7.6A3 3 0 1 1 4 12.5a3 3 0 0 1 2.5-2.95L8.5 7h-2A2.5 2.5 0 1 1 6.5 5h2.7A3 3 0 0 1 12 3Zm0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm-6 7a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm12 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M12 3a3 3 0 0 1 2.8 2h2.7a2.5 2.5 0 1 1 0 2h-2l2 3.5a3 3 0 0 1 2.5 3 3 3 0 1 1-5.6 1.5H7.6A3 3 0 1 1 4 12.5a3 3 0 0 1 2.5-2.95L8.5 7h-2A2.5 2.5 0 1 1 6.5 5h2.7A3 3 0 0 1 12 3Zm0 2a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm-6 7a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm12 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--list::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M9 6h11v2H9V6ZM9 11h11v2H9v-2ZM9 16h11v2H9v-2ZM4.8 6.2l1.2 1.2 2.2-2.2L9.6 6.6 6 10.2 3.4 7.6l1.4-1.4Zm0 9 1.2 1.2 2.2-2.2 1.4 1.4L6 19.2l-2.6-2.6 1.4-1.4Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M9 6h11v2H9V6ZM9 11h11v2H9v-2ZM9 16h11v2H9v-2ZM4.8 6.2l1.2 1.2 2.2-2.2L9.6 6.6 6 10.2 3.4 7.6l1.4-1.4Zm0 9 1.2 1.2 2.2-2.2 1.4 1.4L6 19.2l-2.6-2.6 1.4-1.4Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--check-circle::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm4.7 6.8-6.1 6.1-3.3-3.3-1.4 1.4 4.7 4.7 7.5-7.5-1.4-1.4Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm4.7 6.8-6.1 6.1-3.3-3.3-1.4 1.4 4.7 4.7 7.5-7.5-1.4-1.4Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--traffic::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M13 5h6v6h-2V8.4l-8.3 8.3-1.4-1.4L15.6 7H13V5Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M13 5h6v6h-2V8.4l-8.3 8.3-1.4-1.4L15.6 7H13V5Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--bars::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M4 19h16v2H4v-2Zm1-7h3v6H5v-6Zm5-4h3v10h-3V8Zm5 2h3v8h-3v-8Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M4 19h16v2H4v-2Zm1-7h3v6H5v-6Zm5-4h3v10h-3V8Zm5 2h3v8h-3v-8Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--database::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M12 3c4.4 0 8 1.3 8 3v12c0 1.7-3.6 3-8 3s-8-1.3-8-3V6c0-1.7 3.6-3 8-3Zm0 2c-3.9 0-6 .9-6 1s2.1 1 6 1 6-.9 6-1-2.1-1-6-1Zm0 5c-2.6 0-4.8-.4-6-1v2c0 .1 2.1 1 6 1s6-.9 6-1V9c-1.2.6-3.4 1-6 1Zm0 5c-2.6 0-4.8-.4-6-1v2c0 .1 2.1 1 6 1s6-.9 6-1v-2c-1.2.6-3.4 1-6 1Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M12 3c4.4 0 8 1.3 8 3v12c0 1.7-3.6 3-8 3s-8-1.3-8-3V6c0-1.7 3.6-3 8-3Zm0 2c-3.9 0-6 .9-6 1s2.1 1 6 1 6-.9 6-1-2.1-1-6-1Zm0 5c-2.6 0-4.8-.4-6-1v2c0 .1 2.1 1 6 1s6-.9 6-1V9c-1.2.6-3.4 1-6 1Zm0 5c-2.6 0-4.8-.4-6-1v2c0 .1 2.1 1 6 1s6-.9 6-1v-2c-1.2.6-3.4 1-6 1Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--heart::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M12 21 3.8 12.8a5.8 5.8 0 0 1 8.2-8.2l.7.7.7-.7a5.8 5.8 0 0 1 8.2 8.2L12 21Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M12 21 3.8 12.8a5.8 5.8 0 0 1 8.2-8.2l.7.7.7-.7a5.8 5.8 0 0 1 8.2 8.2L12 21Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--bag::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M7 7V6a5 5 0 0 1 10 0v1h2l1 13H4L5 7h2Zm2 0h6V6a3 3 0 0 0-6 0v1Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M7 7V6a5 5 0 0 1 10 0v1h2l1 13H4L5 7h2Zm2 0h6V6a3 3 0 0 0-6 0v1Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--plane::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='m21 11-8-3.5V3.8a1.8 1.8 0 0 0-3.6 0v3.7L1 11v2l8.4-1.5V16l-2.6 1.8V20l5.2-1.6 5.2 1.6v-2.2L14.6 16v-4.5L23 13v-2h-2Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='m21 11-8-3.5V3.8a1.8 1.8 0 0 0-3.6 0v3.7L1 11v2l8.4-1.5V16l-2.6 1.8V20l5.2-1.6 5.2 1.6v-2.2L14.6 16v-4.5L23 13v-2h-2Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--shield::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M12 2 5 5v6c0 5 3 8.7 7 11 4-2.3 7-6 7-11V5l-7-3Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M12 2 5 5v6c0 5 3 8.7 7 11 4-2.3 7-6 7-11V5l-7-3Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--box::before,
+.icon-label--package::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='m12 2 8 4.5v11L12 22 4 17.5v-11L12 2Zm0 2.3L7 6.9l5 2.8 5-2.8-5-2.6Zm-6 4.4v7.6l5 2.8v-7.6l-5-2.8Zm7 10.4 5-2.8V8.7l-5 2.8v7.6Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='m12 2 8 4.5v11L12 22 4 17.5v-11L12 2Zm0 2.3L7 6.9l5 2.8 5-2.8-5-2.6Zm-6 4.4v7.6l5 2.8v-7.6l-5-2.8Zm7 10.4 5-2.8V8.7l-5 2.8v7.6Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--cart::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 4h2l1.1 2H20l-2 7H8L6.2 6H3V4Zm6 12a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm8 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 4h2l1.1 2H20l-2 7H8L6.2 6H3V4Zm6 12a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm8 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--receipt::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M6 3h12v18l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4L6 21V3Zm3 4v2h6V7H9Zm0 4v2h6v-2H9Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M6 3h12v18l-2-1.4-2 1.4-2-1.4-2 1.4-2-1.4L6 21V3Zm3 4v2h6V7H9Zm0 4v2h6v-2H9Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--link::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M10.6 13.4 9.2 12l4.2-4.2a3 3 0 1 1 4.2 4.2l-1.8 1.8-1.4-1.4 1.8-1.8a1 1 0 1 0-1.4-1.4l-4.2 4.2Zm2.8-2.8 1.4 1.4-4.2 4.2a3 3 0 1 1-4.2-4.2l1.8-1.8 1.4 1.4-1.8 1.8a1 1 0 0 0 1.4 1.4l4.2-4.2Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M10.6 13.4 9.2 12l4.2-4.2a3 3 0 1 1 4.2 4.2l-1.8 1.8-1.4-1.4 1.8-1.8a1 1 0 1 0-1.4-1.4l-4.2 4.2Zm2.8-2.8 1.4 1.4-4.2 4.2a3 3 0 1 1-4.2-4.2l1.8-1.8 1.4 1.4-1.8 1.8a1 1 0 0 0 1.4 1.4l4.2-4.2Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--puzzle::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M10 3a2 2 0 0 1 4 0v1h4v5h-1a2 2 0 1 0 0 4h1v5h-5v-1a2 2 0 1 0-4 0v1H4v-5h1a2 2 0 1 0 0-4H4V4h4V3Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M10 3a2 2 0 0 1 4 0v1h4v5h-1a2 2 0 1 0 0 4h1v5h-5v-1a2 2 0 1 0-4 0v1H4v-5h1a2 2 0 1 0 0-4H4V4h4V3Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--key::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M9 14a5 5 0 1 1 3.9-1.9L21 20.2 19.2 22l-1.6-1.6-1.4 1.4-1.4-1.4-1.4 1.4-2.6-2.6A5 5 0 0 1 9 14Zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M9 14a5 5 0 1 1 3.9-1.9L21 20.2 19.2 22l-1.6-1.6-1.4 1.4-1.4-1.4-1.4 1.4-2.6-2.6A5 5 0 0 1 9 14Zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--card::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm0 3v2h16V8H4Zm2 6h5v2H6v-2Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm0 3v2h16V8H4Zm2 6h5v2H6v-2Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--plug::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M9 3h2v5h2V3h2v5h2v2a5 5 0 0 1-4 4.9V21h-2v-6.1A5 5 0 0 1 7 10V8h2V3Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M9 3h2v5h2V3h2v5h2v2a5 5 0 0 1-4 4.9V21h-2v-6.1A5 5 0 0 1 7 10V8h2V3Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--globe::before,
+.icon-label--monitor::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 5h18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7v2h3v2H7v-2h3v-2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm0 2v9h18V7H3Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M3 5h18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7v2h3v2H7v-2h3v-2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm0 2v9h18V7H3Z'/%3E%3C/svg%3E");
+}
+
+.icon-label--upload::before {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M11 21V9.8L7.4 13.4 6 12l6-6 6 6-1.4 1.4L13 9.8V21h-2ZM4 3h16v2H4V3Z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M11 21V9.8L7.4 13.4 6 12l6-6 6 6-1.4 1.4L13 9.8V21h-2ZM4 3h16v2H4V3Z'/%3E%3C/svg%3E");
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(240, 111, 36, 0.05), transparent 18%),
+    radial-gradient(circle at top right, rgba(13, 106, 75, 0.04), transparent 18%),
+    linear-gradient(180deg, var(--bg-cream), var(--bg-sand));
+  color: var(--graphite);
+  font-family: "Manrope", sans-serif;
+}
+
+body {
+  min-height: 100vh;
+}
+
+.deck-shell {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.deck-nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px 18px;
+  border-right: 1px solid rgba(55, 48, 43, 0.04);
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.deck-mark {
+  display: grid;
+  gap: 6px;
+}
+
+.deck-mark strong {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 0.84rem;
+  line-height: 1.2;
+}
+
+.deck-mark__eyebrow {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  color: rgba(55, 48, 43, 0.8);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.deck-dots {
+  display: grid;
+  gap: 12px;
+}
+
+.deck-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(47, 42, 38, 0.22);
+  background: transparent;
+  cursor: pointer;
+}
+
+.deck-dot.is-active {
+  background: var(--green-deep);
+  border-color: var(--green-deep);
+  box-shadow: 0 0 0 6px rgba(20, 107, 77, 0.12);
+}
+
+.deck {
+  height: 100vh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+}
+
+.slide {
+  min-height: 100vh;
+  padding: 56px 56px 64px;
+  display: grid;
+  gap: 34px;
+  align-content: start;
+  scroll-snap-align: start;
+}
+
+.slide--title {
+  place-items: center;
+  align-content: center;
+  justify-items: center;
+  padding: 56px;
+}
+
+.title-hero {
+  width: min(100%, 1180px);
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+  text-align: center;
+}
+
+.title-hero__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.82rem;
+  color: rgba(55, 48, 43, 0.78);
+  font-weight: 700;
+}
+
+.title-hero__sub {
+  margin: 0;
+  max-width: 860px;
+  color: var(--graphite-soft);
+  font-size: 1.1rem;
+  line-height: 1.65;
+}
+
+.slide__header {
+  display: grid;
+  gap: 12px;
+  max-width: 980px;
+}
+
+.slide__eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.76rem;
+  color: rgba(55, 48, 43, 0.78);
+}
+
+.slide h1 {
+  margin: 0;
+  font-family: "Fraunces", serif;
+  font-size: clamp(2.4rem, 4vw, 4.3rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  color: var(--graphite);
+}
+
+#slide-3 .slide__header {
+  max-width: none;
+}
+
+#slide-3 h1 {
+  font-size: clamp(2.3rem, 3.2vw, 3.9rem);
+}
+
+.slide__lede {
+  margin: 0;
+  max-width: 900px;
+  color: var(--graphite-soft);
+  font-size: 1.04rem;
+  line-height: 1.65;
+}
+
+.slide__header--wide {
+  max-width: 1180px;
+}
+
+.opening-shift {
+  width: min(100%, 1480px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.opening-shift--abstract {
+  grid-template-columns: 1fr 88px 1fr;
+  align-items: center;
+}
+
+.opening-card {
+  background: var(--panel-fill);
+  border: 1px solid rgba(55, 48, 43, 0.22);
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 18px;
+}
+
+.opening-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 12px;
+}
+
+.opening-card--manual::before {
+  background: linear-gradient(180deg, rgba(217, 77, 34, 0.08), rgba(217, 77, 34, 1), rgba(217, 77, 34, 0.12));
+}
+
+.opening-card--guided::before {
+  background: linear-gradient(180deg, rgba(8, 76, 54, 0.08), rgba(8, 76, 54, 1), rgba(8, 76, 54, 0.12));
+}
+
+.opening-card__title {
+  font-size: 1.34rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.opening-card__sub {
+  color: var(--graphite-soft);
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.opening-flow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.opening-flow span {
+  min-height: 92px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 14px 12px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  border: 1px solid rgba(55, 48, 43, 0.16);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 18px rgba(23, 18, 16, 0.05);
+  position: relative;
+}
+
+.opening-card--manual .opening-flow span {
+  border-color: rgba(217, 77, 34, 0.22);
+  background:
+    linear-gradient(180deg, rgba(217, 77, 34, 0.04), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+}
+
+.opening-card--guided .opening-flow span {
+  border-color: rgba(8, 76, 54, 0.22);
+  background:
+    linear-gradient(180deg, rgba(8, 76, 54, 0.05), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+}
+
+.opening-flow span:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  transform: translateY(-50%) rotate(45deg);
+  border-top: 2px solid rgba(55, 48, 43, 0.32);
+  border-right: 2px solid rgba(55, 48, 43, 0.32);
+}
+
+.opening-summary {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  display: grid;
+  gap: 8px;
+  padding: 0 2px;
+}
+
+.opening-summary__label {
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--graphite-soft);
+}
+
+.opening-summary__text {
+  margin: 0;
+  color: var(--graphite);
+  font-size: 1rem;
+  line-height: 1.55;
+  max-width: 980px;
+}
+
+.opening-scene {
+  background: var(--panel-fill);
+  border: 1px solid rgba(55, 48, 43, 0.22);
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 18px;
+}
+
+.opening-scene::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 12px;
+}
+
+.opening-scene--merchant::before {
+  background: linear-gradient(180deg, rgba(217, 77, 34, 0.08), rgba(217, 77, 34, 1), rgba(217, 77, 34, 0.12));
+}
+
+.opening-scene--agent::before {
+  background: linear-gradient(180deg, rgba(8, 76, 54, 0.08), rgba(8, 76, 54, 1), rgba(8, 76, 54, 0.12));
+}
+
+.opening-scene__title {
+  font-size: 1.28rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.opening-scene__visual {
+  min-height: 250px;
+  display: grid;
+  place-items: center;
+}
+
+.scene-browser,
+.scene-agent {
+  width: min(100%, 430px);
+  min-height: 220px;
+  border-radius: 24px;
+  border: 1px solid rgba(55, 48, 43, 0.16);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 18px rgba(23, 18, 16, 0.05);
+  padding: 18px;
+}
+
+.scene-browser {
+  display: grid;
+  gap: 18px;
+}
+
+.scene-browser__kicker,
+.scene-agent__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--graphite-soft);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.scene-browser__store-icon {
+  width: 18px;
+  height: 14px;
+  border-radius: 4px 4px 6px 6px;
+  background: rgba(217, 77, 34, 0.16);
+  border: 1px solid rgba(217, 77, 34, 0.28);
+  position: relative;
+}
+
+.scene-browser__store-icon::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: -4px;
+  height: 5px;
+  border-radius: 4px 4px 0 0;
+  background: rgba(217, 77, 34, 0.26);
+}
+
+.scene-browser__bar {
+  height: 44px;
+  border-radius: 16px;
+  border: 1px solid rgba(217, 77, 34, 0.22);
+  background: rgba(217, 77, 34, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+}
+
+.scene-browser__search-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid rgba(217, 77, 34, 0.55);
+  position: relative;
+}
+
+.scene-browser__search-dot::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  bottom: -4px;
+  width: 6px;
+  height: 2px;
+  background: rgba(217, 77, 34, 0.55);
+  transform: rotate(45deg);
+  border-radius: 999px;
+}
+
+.scene-browser__search-line {
+  width: 120px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(217, 77, 34, 0.18);
+}
+
+.scene-browser__filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.scene-browser__filters span {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 77, 34, 0.18);
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--graphite-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.scene-browser__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.scene-browser__grid span,
+.scene-agent__card,
+.scene-agent__bubble {
+  border-radius: 18px;
+  border: 1px solid rgba(55, 48, 43, 0.14);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.scene-browser__grid span {
+  min-height: 78px;
+  border-color: rgba(217, 77, 34, 0.18);
+  background: rgba(217, 77, 34, 0.04);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+}
+
+.scene-browser__grid span i {
+  width: 26px;
+  height: 20px;
+  border-radius: 8px;
+  background: rgba(217, 77, 34, 0.12);
+  display: block;
+}
+
+.scene-browser__grid span b {
+  width: 46px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(217, 77, 34, 0.16);
+  display: block;
+}
+
+.scene-agent {
+  display: grid;
+  gap: 14px;
+  align-content: center;
+}
+
+.scene-agent__icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(8, 76, 54, 0.14);
+  border: 1px solid rgba(8, 76, 54, 0.24);
+  position: relative;
+}
+
+.scene-agent__icon::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(8, 76, 54, 0.45);
+}
+
+.scene-agent__icon::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  bottom: 3px;
+  width: 10px;
+  height: 5px;
+  border-radius: 999px 999px 4px 4px;
+  background: rgba(8, 76, 54, 0.28);
+}
+
+.scene-agent__bubble {
+  min-height: 58px;
+  border-color: rgba(8, 76, 54, 0.2);
+  background: rgba(8, 76, 54, 0.06);
+  padding: 14px 16px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+}
+
+.scene-agent__card {
+  min-height: 88px;
+  border-color: rgba(8, 76, 54, 0.18);
+  background: rgba(8, 76, 54, 0.04);
+  padding: 16px;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.scene-agent__card--small {
+  min-height: 58px;
+  align-content: center;
+}
+
+.scene-agent__bubble-line {
+  width: 72%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(8, 76, 54, 0.18);
+  display: block;
+}
+
+.scene-agent__bubble-line--short {
+  width: 48%;
+}
+
+.scene-agent__badge {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(8, 76, 54, 0.12);
+  color: var(--green-deep);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.scene-agent__card-lines {
+  display: grid;
+  gap: 8px;
+}
+
+.scene-agent__card-lines span {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(8, 76, 54, 0.16);
+  display: block;
+}
+
+.scene-agent__card-lines span:last-child {
+  width: 64%;
+}
+
+.scene-agent__mini-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.scene-agent__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(8, 76, 54, 0.28);
+}
+
+.scene-agent__mini-line {
+  width: 72px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(8, 76, 54, 0.16);
+  display: block;
+}
+
+.opening-scene__caption {
+  color: var(--graphite-soft);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.opening-shift__arrow {
+  display: grid;
+  place-items: center;
+  font-family: "Fraunces", serif;
+  font-size: 4rem;
+  line-height: 1;
+  color: var(--graphite-soft);
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+}
+
+.journey-card {
+  background: var(--panel-fill);
+  border: 1px solid rgba(55, 48, 43, 0.22);
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.journey-card--manual {
+  background:
+    linear-gradient(180deg, rgba(217, 77, 34, 0.05), rgba(255, 253, 249, 0.98) 18%),
+    var(--panel-fill);
+}
+
+.journey-card--guided {
+  background:
+    linear-gradient(180deg, rgba(8, 76, 54, 0.045), rgba(255, 253, 249, 0.98) 18%),
+    var(--panel-fill);
+}
+
+.journey-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 12px;
+  background: linear-gradient(180deg, rgba(217, 77, 34, 0.08), rgba(217, 77, 34, 1), rgba(217, 77, 34, 0.12));
+}
+
+.journey-card--guided::before {
+  background: linear-gradient(180deg, rgba(8, 76, 54, 0.08), rgba(8, 76, 54, 1), rgba(8, 76, 54, 0.12));
+}
+
+.journey-card__title {
+  font-size: 1.28rem;
+  font-weight: 800;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.journey-steps {
+  display: grid;
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.journey-step {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(55, 48, 43, 0.18);
+  border-radius: 22px;
+  padding: 18px;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-height: 188px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 18px rgba(23, 18, 16, 0.05);
+  position: relative;
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease,
+    box-shadow 260ms ease,
+    border-color 260ms ease;
+}
+
+.journey-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -18px;
+  width: 2px;
+  height: 18px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(55, 48, 43, 0.3), rgba(55, 48, 43, 0.06));
+}
+
+.journey-card--manual .journey-step:not(:last-child)::after {
+  background: linear-gradient(180deg, rgba(217, 77, 34, 0.42), rgba(217, 77, 34, 0.08));
+}
+
+.journey-card--guided .journey-step:not(:last-child)::after {
+  background: linear-gradient(180deg, rgba(8, 76, 54, 0.48), rgba(8, 76, 54, 0.08));
+}
+
+.journey-step__label {
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--graphite-soft);
+  font-weight: 700;
+}
+
+.journey-step__label.icon-label,
+.opening-scene__title.icon-label,
+.opening-summary__label.icon-label,
+.control-channel__label.icon-label,
+.ucp-bridge__title.icon-label,
+.ucp-layer__label.icon-label,
+.demo-copy__title.icon-label,
+.demo-copy__subhead.icon-label,
+.demo-setup__title.icon-label,
+.merchant-stack__server-title.icon-label,
+.merchant-system__title.icon-label,
+.ingestion-flow__label.icon-label,
+.proof-card__title.icon-label {
+  display: inline-flex;
+}
+
+.manual-search__box,
+.intent-bubble {
+  border-radius: 18px;
+  padding: 14px 16px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  background: #fffdf9;
+  border: 1px solid rgba(55, 48, 43, 0.22);
+  color: var(--graphite);
+  font-weight: 600;
+  width: 100%;
+}
+
+.intent-bubble {
+  border-color: rgba(8, 76, 54, 0.42);
+  box-shadow: inset 0 0 0 2px rgba(8, 76, 54, 0.12);
+}
+
+.manual-search__chips,
+.match-cluster,
+.semantic-rail,
+.option-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.manual-search__chips span,
+.match-cluster span,
+.semantic-rail span,
+.option-chip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  background: rgba(250, 244, 236, 1);
+  border: 1px solid rgba(55, 48, 43, 0.16);
+  color: var(--graphite);
+  font-weight: 600;
+}
+
+.manual-search__chips span {
+  background: rgba(217, 77, 34, 0.1);
+  border-color: rgba(217, 77, 34, 0.34);
+}
+
+.match-cluster span {
+  background: rgba(217, 77, 34, 0.1);
+  border-color: rgba(217, 77, 34, 0.32);
+}
+
+.semantic-rail span,
+.option-stack--guided .option-chip {
+  background: rgba(8, 76, 54, 0.1);
+  border-color: rgba(8, 76, 54, 0.32);
+}
+
+.option-chip.is-highlighted {
+  background: var(--green-deep);
+  color: #fff;
+  border-color: var(--green-deep);
+}
+
+.decision-panel {
+  min-height: 118px;
+  display: grid;
+  place-items: center;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(247, 238, 226, 0.96));
+  border: 1px solid rgba(55, 48, 43, 0.2);
+}
+
+.decision-panel--manual {
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  padding: 18px 20px;
+  position: relative;
+}
+
+.decision-panel--manual::before,
+.decision-panel--manual::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 84px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(217, 77, 34, 1), rgba(217, 77, 34, 0.18));
+}
+
+.decision-panel--manual::before {
+  left: calc(50% - 138px);
+}
+
+.decision-panel--manual::after {
+  right: calc(50% - 138px);
+  transform: scaleX(-1);
+}
+
+.decision-panel__ghost {
+  height: 68px;
+  border-radius: 18px;
+  border: 1px dashed rgba(217, 77, 34, 0.54);
+  background:
+    linear-gradient(180deg, rgba(217, 77, 34, 0.14), rgba(217, 77, 34, 0.04)),
+    rgba(255, 255, 255, 0.96);
+  position: relative;
+}
+
+.decision-panel__ghost::before,
+.decision-panel__ghost::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(217, 77, 34, 0.3);
+}
+
+.decision-panel__ghost::before {
+  top: 22px;
+}
+
+.decision-panel__ghost::after {
+  top: 38px;
+}
+
+.decision-panel__center {
+  width: 82px;
+  height: 82px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 2.2rem;
+  color: var(--coral);
+  border: 1px solid rgba(217, 77, 34, 0.42);
+  background: radial-gradient(circle at center, rgba(217, 77, 34, 0.24), rgba(217, 77, 34, 0.06));
+  box-shadow: 0 16px 32px rgba(217, 77, 34, 0.22);
+}
+
+.decision-panel--guided {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  padding: 16px 20px;
+}
+
+.decision-panel__result {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+  min-height: 74px;
+  padding: 12px;
+  border-radius: 18px;
+  background:
+    linear-gradient(90deg, rgba(8, 76, 54, 0.2), rgba(8, 76, 54, 0.05)),
+    rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(8, 76, 54, 0.34);
+  box-shadow: 0 16px 32px rgba(8, 76, 54, 0.14);
+}
+
+.decision-panel__result-thumb {
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(14, 90, 64, 0.94), rgba(20, 117, 83, 0.48)),
+    var(--green-deep);
+  position: relative;
+  overflow: hidden;
+}
+
+.decision-panel__result-thumb::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border-radius: 999px;
+  border: 3px solid rgba(255, 255, 255, 0.78);
+  border-top-color: transparent;
+  transform: rotate(35deg);
+}
+
+.decision-panel__result-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.decision-panel__result-copy strong {
+  font-size: 1rem;
+  color: var(--graphite);
+}
+
+.decision-panel__result-copy span {
+  color: var(--graphite-soft);
+  font-size: 0.92rem;
+}
+
+.decision-panel__cta {
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--green-deep);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 12px 28px rgba(8, 76, 54, 0.32);
+}
+
+.slide[data-step] .journey-step,
+.slide[data-step] .control-channel,
+.slide[data-step] .ucp-bridge [data-step-index] {
+  opacity: 0.18;
+  transform: translateY(10px);
+}
+
+.slide[data-step] .journey-step.is-active,
+.slide[data-step] .control-channel.is-active,
+.slide[data-step] .ucp-bridge [data-step-index].is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.slide[data-step] .journey-step.is-active {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 14px 28px rgba(23, 18, 16, 0.08);
+}
+
+.slide[data-step] .journey-card--manual .journey-step.is-active {
+  border-color: rgba(217, 77, 34, 0.34);
+}
+
+.slide[data-step] .journey-card--guided .journey-step.is-active {
+  border-color: rgba(8, 76, 54, 0.34);
+}
+
+.slide[data-step="0"] .journey-step,
+.slide[data-step="0"] .control-channel,
+.slide[data-step="0"] .ucp-bridge [data-step-index] {
+  opacity: 0.14;
+}
+
+.control-map {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) 170px;
+  gap: 24px;
+  align-items: stretch;
+  min-height: 520px;
+}
+
+.control-map__edge {
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-soft);
+}
+
+.control-map__edge--merchant {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 238, 226, 0.94));
+  border: 1px solid rgba(55, 48, 43, 0.22);
+  box-shadow:
+    var(--shadow-soft),
+    inset 8px 0 0 rgba(217, 77, 34, 0.9);
+}
+
+.control-map__edge--agent {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(8, 76, 54, 0.12));
+  border: 1px solid rgba(8, 76, 54, 0.28);
+  box-shadow:
+    var(--shadow-soft),
+    inset 8px 0 0 rgba(8, 76, 54, 0.95);
+}
+
+.control-map__channels {
+  display: grid;
+  gap: 18px;
+  align-content: center;
+}
+
+.control-channel {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease;
+}
+
+.control-channel__label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--graphite);
+}
+
+.control-channel__band {
+  position: relative;
+  height: 54px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(247, 238, 226, 0.94), rgba(255, 255, 255, 0.88));
+  border: 1px solid rgba(55, 48, 43, 0.16);
+  overflow: hidden;
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease;
+}
+
+.control-channel__band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(217, 77, 34, 0.1) 0 36%, transparent 36% 100%);
+}
+
+.control-channel__pull {
+  position: absolute;
+  inset: 8px auto 8px 8px;
+  width: var(--pull);
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(217, 77, 34, 0.34), rgba(217, 77, 34, 1));
+  transition:
+    width 340ms ease,
+    opacity 260ms ease;
+}
+
+.control-channel__pull::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 42px;
+  background: linear-gradient(90deg, rgba(240, 111, 36, 0.24), rgba(240, 111, 36, 1));
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.slide[data-step] .control-channel__band {
+  opacity: 0.42;
+}
+
+.slide[data-step] .control-channel.is-active .control-channel__band {
+  opacity: 1;
+}
+
+.slide[data-step] .control-channel:not(.is-active) .control-channel__pull {
+  width: 14%;
+  opacity: 0.24;
+}
+
+.slide[data-step] .control-channel.is-active .control-channel__pull {
+  opacity: 1;
+}
+
+.ucp-live {
+  display: grid;
+  grid-template-columns: minmax(340px, 0.88fr) minmax(0, 1.12fr);
+  gap: 28px;
+  align-items: stretch;
+}
+
+.ucp-summary {
+  width: min(100%, 1480px);
+  margin: 0 auto;
+  display: grid;
+  gap: 10px;
+}
+
+.ucp-summary p {
+  margin: 0;
+  color: var(--graphite-soft);
+  font-size: 0.98rem;
+  line-height: 1.58;
+  max-width: 1180px;
+}
+
+.ucp-live--single {
+  grid-template-columns: 1fr;
+  max-width: 1560px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.ucp-live__panel {
+  background: var(--panel-fill);
+  border: 1px solid rgba(55, 48, 43, 0.2);
+  border-radius: 28px;
+  padding: 26px;
+  box-shadow: var(--shadow-soft);
+  min-height: 520px;
+  display: grid;
+  align-content: start;
+  gap: 22px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ucp-live__panel--diagram {
+  width: min(100%, 1500px);
+  justify-self: center;
+}
+
+.ucp-live__panel--links {
+  background:
+    linear-gradient(180deg, rgba(217, 77, 34, 0.055), rgba(255, 253, 249, 0.98) 16%),
+    var(--panel-fill);
+}
+
+.ucp-live__panel--diagram {
+  background:
+    linear-gradient(180deg, rgba(8, 76, 54, 0.05), rgba(255, 253, 249, 0.98) 16%),
+    var(--panel-fill);
+}
+
+.ucp-live__panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 12px;
+}
+
+.ucp-live__panel--links::before {
+  background: linear-gradient(180deg, rgba(217, 77, 34, 0.08), rgba(217, 77, 34, 1), rgba(217, 77, 34, 0.12));
+}
+
+.ucp-live__panel--diagram::before {
+  background: linear-gradient(180deg, rgba(8, 76, 54, 0.08), rgba(8, 76, 54, 1), rgba(8, 76, 54, 0.12));
+}
+
+.ucp-live__title {
+  font-size: 1.28rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.merchant-links {
+  display: grid;
+  gap: 16px;
+}
+
+.merchant-link-card {
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(217, 77, 34, 0.32);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 18px rgba(23, 18, 16, 0.05);
+  display: grid;
+  gap: 6px;
+  background:
+    linear-gradient(180deg, rgba(217, 77, 34, 0.035), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+}
+
+.merchant-link-card strong {
+  font-size: 1rem;
+}
+
+.merchant-link-card span {
+  color: var(--graphite-soft);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  word-break: break-all;
+}
+
+.ucp-architecture {
+  display: grid;
+  gap: 18px;
+}
+
+.actor-rail {
+  min-height: 68px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  text-align: center;
+  border: 1px solid rgba(55, 48, 43, 0.16);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.actor-rail > .icon-label {
+  justify-content: center;
+}
+
+.actor-rail--platform {
+  border-color: rgba(55, 48, 43, 0.18);
+  background: rgba(55, 48, 43, 0.04);
+}
+
+.actor-rail--business {
+  border-color: rgba(8, 76, 54, 0.28);
+  background: rgba(8, 76, 54, 0.08);
+}
+
+.ucp-architecture__frame {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) 170px;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+}
+
+.ucp-side {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.ucp-side--centered {
+  align-content: center;
+}
+
+.side-note {
+  color: var(--graphite-soft);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  text-align: center;
+  max-width: 150px;
+  margin: 0 auto;
+}
+
+.ucp-middle {
+  display: grid;
+  gap: 18px;
+  width: min(100%, 1180px);
+  justify-self: center;
+}
+
+.ucp-layer {
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(55, 48, 43, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 18px rgba(23, 18, 16, 0.05);
+  justify-items: center;
+}
+
+.ucp-layer__label {
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--graphite-soft);
+  font-weight: 700;
+  text-align: center;
+}
+
+.ucp-layer__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.layer-chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(8, 76, 54, 0.24);
+  background: rgba(8, 76, 54, 0.08);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.layer-chip > .icon-label,
+.bridge-chip > .icon-label,
+.modular-chip > .icon-label,
+.next-chip > .icon-label {
+  justify-content: center;
+}
+
+.layer-chip--wide {
+  min-width: 180px;
+  text-align: center;
+}
+
+.layer-chip--soft {
+  border-style: dashed;
+  background: rgba(55, 48, 43, 0.05);
+  border-color: rgba(55, 48, 43, 0.2);
+}
+
+.ucp-architecture__footnote {
+  color: var(--graphite-soft);
+  font-size: 0.94rem;
+  line-height: 1.45;
+  padding-left: 2px;
+}
+
+.ucp-bridge {
+  width: min(100%, 1500px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) 240px minmax(300px, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+
+.ucp-bridge__panel {
+  background: var(--panel-fill);
+  border: 1px solid rgba(55, 48, 43, 0.2);
+  border-radius: 28px;
+  padding: 24px 26px;
+  box-shadow: var(--shadow-soft);
+  min-height: 420px;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+
+.ucp-bridge__panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 12px;
+}
+
+.ucp-bridge__panel--agents::before {
+  background: linear-gradient(180deg, rgba(217, 77, 34, 0.08), rgba(217, 77, 34, 1), rgba(217, 77, 34, 0.12));
+}
+
+.ucp-bridge__panel--capabilities::before {
+  background: linear-gradient(180deg, rgba(8, 76, 54, 0.08), rgba(8, 76, 54, 1), rgba(8, 76, 54, 0.12));
+}
+
+.ucp-bridge__title {
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.ucp-bridge__stack {
+  display: grid;
+  gap: 14px;
+}
+
+.bridge-chip {
+  min-height: 74px;
+  border-radius: 20px;
+  border: 1px solid rgba(217, 77, 34, 0.24);
+  background:
+    linear-gradient(180deg, rgba(217, 77, 34, 0.05), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 16px 18px;
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 18px rgba(23, 18, 16, 0.05);
+}
+
+.bridge-chip--merchant {
+  border-color: rgba(8, 76, 54, 0.24);
+  background:
+    linear-gradient(180deg, rgba(8, 76, 54, 0.05), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+}
+
+.ucp-bridge__core {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+}
+
+.ucp-bridge__core-ring {
+  width: 196px;
+  height: 196px;
+  border-radius: 34px;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.94)),
+    linear-gradient(135deg, rgba(217, 77, 34, 1), rgba(8, 76, 54, 1));
+  border: 4px solid transparent;
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  color: var(--graphite);
+  font-family: "Fraunces", serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  box-shadow: 0 20px 40px rgba(23, 18, 16, 0.14);
+}
+
+.ucp-bridge__core-copy {
+  max-width: 220px;
+  text-align: center;
+  color: var(--graphite-soft);
+  font-size: 0.96rem;
+  line-height: 1.55;
+  display: grid;
+  gap: 6px;
+}
+
+.ucp-bridge__core-copy strong {
+  color: var(--graphite);
+  font-size: 1rem;
+}
+
+.ucp-bridge__core-copy span {
+  color: var(--graphite-soft);
+}
+
+.ucp-bridge__note {
+  color: var(--graphite-soft);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.demo-layout {
+  width: min(100%, 1560px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.33fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.demo-copy {
+  padding-top: 6px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.demo-copy__title {
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.demo-copy__text {
+  margin: 0;
+  color: var(--graphite-soft);
+  font-size: 0.94rem;
+  line-height: 1.58;
+}
+
+.demo-copy__subhead {
+  margin-top: 4px;
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.demo-copy__text--small {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.demo-setup {
+  width: 100%;
+  margin: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.demo-setup__section {
+  background: var(--panel-fill);
+  border: 1px solid rgba(55, 48, 43, 0.2);
+  border-radius: 28px;
+  padding: 18px 22px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.demo-setup__section::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 12px;
+}
+
+.demo-setup__section--agents::before {
+  background: linear-gradient(180deg, rgba(8, 76, 54, 0.08), rgba(8, 76, 54, 1), rgba(8, 76, 54, 0.12));
+}
+
+.demo-setup__section--merchant::before {
+  background: linear-gradient(180deg, rgba(8, 76, 54, 0.08), rgba(8, 76, 54, 1), rgba(8, 76, 54, 0.12));
+}
+
+.demo-setup__title {
+  font-size: 1.14rem;
+  font-weight: 800;
+  margin-bottom: 14px;
+  letter-spacing: -0.02em;
+}
+
+.demo-surface-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.demo-surface {
+  min-height: 92px;
+  border-radius: 22px;
+  border: 1px solid rgba(92, 105, 114, 0.28);
+  background:
+    linear-gradient(180deg, rgba(92, 105, 114, 0.04), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 18px rgba(23, 18, 16, 0.05);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 6px;
+  padding: 14px;
+  text-align: center;
+  position: relative;
+}
+
+.demo-surface strong {
+  font-size: 0.96rem;
+}
+
+.demo-surface span {
+  color: var(--graphite-soft);
+  font-size: 0.84rem;
+  line-height: 1.32;
+}
+
+.demo-surface--highlight {
+  border-color: rgba(8, 76, 54, 0.34);
+  background:
+    linear-gradient(180deg, rgba(8, 76, 54, 0.08), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+}
+
+.demo-setup__boundary {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+
+.demo-setup__connector,
+.merchant-stack__connector {
+  display: grid;
+  justify-items: center;
+  margin: -2px 0 0;
+}
+
+.stack-arrow {
+  position: relative;
+  width: 2px;
+  height: 22px;
+}
+
+.stack-arrow__stem {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 76, 54, 0.92), rgba(8, 76, 54, 0.28));
+}
+
+.stack-arrow__stem::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 10px;
+  height: 10px;
+  transform: translateX(-50%) rotate(45deg);
+  border-right: 2px solid rgba(8, 76, 54, 0.92);
+  border-bottom: 2px solid rgba(8, 76, 54, 0.92);
+}
+
+.demo-setup__boundary-line {
+  width: min(100%, 1240px);
+  height: 2px;
+  background: linear-gradient(90deg, rgba(217, 77, 34, 0.4), rgba(8, 76, 54, 0.5));
+}
+
+.demo-setup__boundary-label {
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: rgba(8, 76, 54, 0.08);
+  border: 1px solid rgba(8, 76, 54, 0.2);
+  color: var(--green-deep);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.merchant-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.merchant-stack__server,
+.merchant-stack__systems,
+.merchant-stack__ingestion {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(8, 76, 54, 0.18);
+  border-radius: 24px;
+  padding: 16px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 18px rgba(23, 18, 16, 0.05);
+}
+
+.merchant-stack__server-title,
+.merchant-system__title,
+.ingestion-flow__label {
+  font-size: 0.94rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.merchant-stack__capabilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.merchant-stack__capabilities > span {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(8, 76, 54, 0.24);
+  background: rgba(8, 76, 54, 0.08);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.merchant-stack__capabilities > span > .icon-label {
+  justify-content: center;
+}
+
+.merchant-cap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.merchant-cap em {
+  font-style: normal;
+  font-size: 0.7rem;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.merchant-cap--mocked em {
+  background: rgba(217, 77, 34, 0.14);
+  color: var(--coral);
+  border: 1px solid rgba(217, 77, 34, 0.28);
+  box-shadow: 0 0 0 3px rgba(217, 77, 34, 0.05);
+}
+
+.merchant-stack__systems {
+  display: grid;
+  grid-template-columns: 1fr 0.72fr;
+  gap: 16px;
+}
+
+.merchant-system {
+  border-radius: 20px;
+  border: 1px solid rgba(8, 76, 54, 0.16);
+  background:
+    linear-gradient(180deg, rgba(8, 76, 54, 0.04), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+  padding: 16px;
+}
+
+.merchant-system--search {
+  min-height: 126px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  border-color: rgba(8, 76, 54, 0.26);
+  background:
+    linear-gradient(180deg, rgba(8, 76, 54, 0.07), rgba(255, 255, 255, 0.99)),
+    rgba(255, 255, 255, 0.99);
+}
+
+.merchant-system--search .merchant-system__title {
+  font-size: 1.08rem;
+}
+
+.merchant-system--recipe {
+  min-height: 126px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  border-color: rgba(55, 48, 43, 0.2);
+  background:
+    linear-gradient(180deg, rgba(217, 77, 34, 0.045), rgba(255, 255, 255, 0.99)),
+    rgba(255, 255, 255, 0.99);
+}
+
+.merchant-system--recipe .merchant-system__title {
+  font-size: 1rem;
+}
+
+.merchant-system__badge {
+  margin: 2px 0 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 77, 34, 0.22);
+  background: rgba(217, 77, 34, 0.08);
+  color: var(--coral);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.merchant-system--external {
+  border-style: dashed;
+}
+
+.merchant-system__sub {
+  color: var(--graphite-soft);
+  font-size: 0.84rem;
+  line-height: 1.38;
+}
+
+.modular-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.modular-chip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(217, 77, 34, 0.18);
+  background: rgba(255, 255, 255, 0.96);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.modular-chip--active {
+  border-color: rgba(8, 76, 54, 0.26);
+  background: rgba(8, 76, 54, 0.08);
+}
+
+.merchant-stack__ingestion {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.ingestion-flow {
+  border-radius: 20px;
+  padding: 14px 16px;
+  border: 1px solid rgba(55, 48, 43, 0.16);
+}
+
+.ingestion-flow--demo {
+  border-color: rgba(8, 76, 54, 0.34);
+  background:
+    linear-gradient(180deg, rgba(8, 76, 54, 0.08), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+}
+
+.ingestion-flow--prod {
+  border-color: rgba(92, 105, 114, 0.28);
+  background:
+    linear-gradient(180deg, rgba(92, 105, 114, 0.06), rgba(255, 255, 255, 0.98)),
+    rgba(255, 255, 255, 0.98);
+}
+
+.ingestion-flow__visual {
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  min-height: 70px;
+  position: relative;
+}
+
+.ingestion-flow--full .ingestion-flow__visual {
+  min-height: 86px;
+}
+
+.ingestion-pill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(55, 48, 43, 0.16);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.merchant-stack__sync-arrows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: -2px 0 -6px;
+}
+
+.sync-arrow {
+  position: relative;
+  width: 100%;
+  min-height: 0;
+  margin: 0;
+}
+
+.sync-arrow__stem {
+  width: 2px;
+  height: 92px;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 8px);
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(55, 48, 43, 0.92), rgba(55, 48, 43, 0.24));
+}
+
+.sync-arrow__stem::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -1px;
+  width: 10px;
+  height: 10px;
+  transform: translateX(-50%) rotate(225deg);
+  border-right: 2px solid rgba(55, 48, 43, 0.92);
+  border-bottom: 2px solid rgba(55, 48, 43, 0.92);
+}
+
+.sync-arrow__label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 36px);
+  transform: translateX(-50%);
+  z-index: 1;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 249, 241, 0.96);
+  color: var(--graphite);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  box-shadow: 0 0 0 4px rgba(255, 249, 241, 0.96);
+}
+
+.sync-arrow--demo .sync-arrow__stem {
+  background: linear-gradient(180deg, rgba(8, 76, 54, 0.92), rgba(8, 76, 54, 0.24));
+}
+
+.sync-arrow--demo .sync-arrow__stem::after {
+  border-right-color: rgba(8, 76, 54, 0.92);
+  border-bottom-color: rgba(8, 76, 54, 0.92);
+}
+
+.proof-board {
+  width: min(100%, 1520px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.02fr 1fr 0.98fr;
+  gap: 22px;
+}
+
+.proof-card {
+  background: var(--panel-fill);
+  border: 1px solid rgba(55, 48, 43, 0.2);
+  border-radius: 28px;
+  padding: 28px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+}
+
+.proof-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 12px;
+}
+
+.proof-card--evidence::before,
+.proof-card--reality::before,
+.proof-card--next::before {
+  background: linear-gradient(180deg, rgba(217, 77, 34, 0.08), rgba(217, 77, 34, 1), rgba(217, 77, 34, 0.12));
+}
+
+.proof-card__title {
+  font-size: 1.28rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 22px;
+}
+
+.proof-note,
+.reality-block li {
+  color: var(--graphite-soft);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.evidence-list {
+  display: grid;
+  gap: 16px;
+}
+
+.evidence-item {
+  border-radius: 22px;
+  border: 1px solid rgba(217, 77, 34, 0.18);
+  background: rgba(217, 77, 34, 0.05);
+  padding: 18px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.reality-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.reality-block {
+  border-radius: 22px;
+  border: 1px solid rgba(8, 76, 54, 0.18);
+  background: rgba(8, 76, 54, 0.05);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.reality-block--muted {
+  border-color: rgba(92, 105, 114, 0.22);
+  background: rgba(92, 105, 114, 0.06);
+}
+
+.reality-block strong {
+  font-size: 1rem;
+}
+
+.reality-block ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.next-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.next-chip {
+  border-radius: 18px;
+  border: 1px solid rgba(217, 77, 34, 0.2);
+  background: rgba(255, 255, 255, 0.96);
+  padding: 18px 16px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.proof-note {
+  margin: 0;
+}
+
+
+@media (max-width: 1100px) {
+  .deck-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .deck-nav {
+    display: none;
+  }
+
+  .slide {
+    padding: 32px 20px 40px;
+  }
+
+  .comparison-grid,
+  .opening-shift,
+  .control-map,
+  .ucp-bridge,
+  .ucp-live,
+  .proof-board,
+  .demo-layout,
+  .demo-surface-grid,
+  .merchant-stack__systems,
+  .merchant-stack__ingestion {
+    grid-template-columns: 1fr;
+  }
+
+  .reality-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .control-map__channels {
+    order: 2;
+  }
+
+  .control-channel {
+    grid-template-columns: 1fr;
+  }
+
+  .ucp-architecture__frame {
+    grid-template-columns: 1fr;
+  }
+
+  .opening-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .opening-shift--abstract {
+    grid-template-columns: 1fr;
+  }
+
+  .opening-shift__arrow {
+    transform: rotate(90deg);
+    font-size: 3rem;
+  }
+
+  .opening-flow span:not(:last-child)::after {
+    right: 50%;
+    top: auto;
+    bottom: -10px;
+    transform: translateX(50%) rotate(135deg);
+  }
+}
+
+    </style>
+  </head>
+  <body>
+    <div class="deck-shell">
+      <aside class="deck-nav">
+        <div class="deck-mark"></div>
+        <nav class="deck-dots" aria-label="Slide navigation">
+          <button class="deck-dot is-active" data-target="slide-title" aria-label="Go to Title Slide"></button>
+          <button class="deck-dot" data-target="slide-1" aria-label="Go to Slide 1"></button>
+          <button class="deck-dot" data-target="slide-3" aria-label="Go to Slide 3"></button>
+          <button class="deck-dot" data-target="slide-4" aria-label="Go to Slide 4"></button>
+          <button class="deck-dot" data-target="slide-bridge" aria-label="Go to UCP Bridge"></button>
+          <button class="deck-dot" data-target="slide-5" aria-label="Go to Slide 5"></button>
+          <button class="deck-dot" data-target="slide-6" aria-label="Go to Slide 6"></button>
+          <button class="deck-dot" data-target="slide-7" aria-label="Go to Slide 7"></button>
+        </nav>
+      </aside>
+
+      <main class="deck" id="deck">
+        <section class="slide slide--title" id="slide-title" data-slide-title="Title">
+          <div class="title-hero">
+            <h1>Agentic Commerce using Universal Commerce Protocol</h1>
+            <p class="title-hero__sub">A merchant-controlled path into agent-mediated discovery, cart, checkout, and post-purchase flows.</p>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-1" data-slide-title="Slide 1">
+          <div class="slide__header slide__header--wide">
+            <h1>The Interface For Commerce Is Changing</h1>
+            <p class="slide__lede">Commerce is moving from merchant-owned browsing surfaces to agent-mediated entry points. The customer intent is the same, but the front door into commerce is changing.</p>
+          </div>
+
+          <div class="opening-shift opening-shift--abstract">
+            <article class="opening-scene opening-scene--merchant">
+              <div class="opening-scene__title icon-label icon-label--store">Merchant website era</div>
+              <div class="opening-scene__visual">
+                <div class="scene-browser">
+                  <div class="scene-browser__kicker">
+                    <span class="scene-browser__store-icon"></span>
+                    <span>Merchant-controlled discovery</span>
+                  </div>
+                  <div class="scene-browser__bar">
+                    <span class="scene-browser__search-dot"></span>
+                    <span class="scene-browser__search-line"></span>
+                  </div>
+                  <div class="scene-browser__filters">
+                    <span>Search</span>
+                    <span>Filter</span>
+                    <span>Browse</span>
+                  </div>
+                  <div class="scene-browser__grid">
+                    <span><i></i><b></b></span>
+                    <span><i></i><b></b></span>
+                    <span><i></i><b></b></span>
+                    <span><i></i><b></b></span>
+                    <span><i></i><b></b></span>
+                    <span><i></i><b></b></span>
+                  </div>
+                </div>
+              </div>
+              <div class="opening-scene__caption">Discovery starts on the merchant surface.</div>
+            </article>
+
+            <div class="opening-shift__arrow">→</div>
+
+            <article class="opening-scene opening-scene--agent">
+              <div class="opening-scene__title icon-label icon-label--agent">Agent entry-point era</div>
+              <div class="opening-scene__visual">
+                <div class="scene-agent">
+                  <div class="scene-agent__kicker">
+                    <span class="scene-agent__icon"></span>
+                    <span>Agent-mediated discovery</span>
+                  </div>
+                  <div class="scene-agent__bubble">
+                    <span class="scene-agent__bubble-line"></span>
+                    <span class="scene-agent__bubble-line scene-agent__bubble-line--short"></span>
+                  </div>
+                  <div class="scene-agent__card">
+                    <span class="scene-agent__badge">Best fit</span>
+                    <div class="scene-agent__card-lines">
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                  <div class="scene-agent__card scene-agent__card--small">
+                    <div class="scene-agent__mini-row">
+                      <span class="scene-agent__dot"></span>
+                      <span class="scene-agent__mini-line"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="opening-scene__caption">Discovery starts in the agent interface.</div>
+            </article>
+          </div>
+
+          <div class="opening-summary">
+            <div class="opening-summary__label icon-label icon-label--sparkles">What changes</div>
+            <p class="opening-summary__text">The merchant no longer controls the first interaction by default. The agent can become the new discovery and decision layer.</p>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-3" data-slide-title="Slide 3" data-step-count="4" data-step="0">
+          <div class="slide__header">
+            <h1>Traditional E-commerce vs Agent Guided Commerce</h1>
+          </div>
+
+          <div class="comparison-grid">
+            <article class="journey-card journey-card--manual">
+              <div class="journey-card__title">Traditional Ecommerce</div>
+              <div class="journey-steps">
+                <div class="journey-step" data-step-index="1">
+                  <div class="journey-step__label icon-label icon-label--search">Search / Filters</div>
+                  <div class="manual-search">
+                    <div class="manual-search__box">wireless headphones</div>
+                    <div class="manual-search__chips">
+                      <span>Price</span>
+                      <span>Brand</span>
+                      <span>Battery</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="journey-step" data-step-index="2">
+                  <div class="journey-step__label icon-label icon-label--tag">Keyword Match</div>
+                  <div class="match-cluster">
+                    <span>wireless</span>
+                    <span>headphones</span>
+                    <span>battery</span>
+                    <span>bluetooth</span>
+                    <span>noise cancelling</span>
+                  </div>
+                </div>
+
+                <div class="journey-step" data-step-index="3">
+                  <div class="journey-step__label icon-label icon-label--grid">Many Options</div>
+                  <div class="option-stack option-stack--manual">
+                    <div class="option-chip">Product A</div>
+                    <div class="option-chip">Product B</div>
+                    <div class="option-chip">Product C</div>
+                    <div class="option-chip">Product D</div>
+                    <div class="option-chip">Product E</div>
+                    <div class="option-chip">Product F</div>
+                  </div>
+                </div>
+
+                <div class="journey-step" data-step-index="4">
+                  <div class="journey-step__label icon-label icon-label--compare">Manual Comparison</div>
+                  <div class="decision-panel decision-panel--manual">
+                    <div class="decision-panel__ghost"></div>
+                    <div class="decision-panel__center">?</div>
+                    <div class="decision-panel__ghost"></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="journey-card journey-card--guided">
+              <div class="journey-card__title">Agent-Guided Commerce</div>
+              <div class="journey-steps">
+                <div class="journey-step" data-step-index="1">
+                  <div class="journey-step__label icon-label icon-label--message">Natural Language Intent</div>
+                  <div class="intent-bubble">
+                    Find me the best headphones for office calls with long battery life.
+                  </div>
+                </div>
+
+                <div class="journey-step" data-step-index="2">
+                  <div class="journey-step__label icon-label icon-label--network">Semantic Interpretation</div>
+                  <div class="semantic-rail">
+                    <span>call clarity</span>
+                    <span>all-day battery</span>
+                    <span>workday comfort</span>
+                    <span>hybrid-work fit</span>
+                  </div>
+                </div>
+
+                <div class="journey-step" data-step-index="3">
+                  <div class="journey-step__label icon-label icon-label--list">Curated Shortlist</div>
+                  <div class="option-stack option-stack--guided">
+                    <div class="option-chip is-highlighted">Best fit</div>
+                    <div class="option-chip">Alternate 1</div>
+                    <div class="option-chip">Alternate 2</div>
+                  </div>
+                </div>
+
+                <div class="journey-step" data-step-index="4">
+                  <div class="journey-step__label icon-label icon-label--check-circle">Guided Choice</div>
+                  <div class="decision-panel decision-panel--guided">
+                    <div class="decision-panel__result">
+                      <div class="decision-panel__result-thumb"></div>
+                      <div class="decision-panel__result-copy">
+                        <strong>JBL Pro Office</strong>
+                        <span>Best for calls + long battery</span>
+                      </div>
+                    </div>
+                    <div class="decision-panel__cta">Buy</div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-4" data-slide-title="Slide 4" data-step-count="5" data-step="0">
+          <div class="slide__header">
+            <h1>When The Interface Moves, Value Can Move With It</h1>
+          </div>
+
+          <div class="control-map">
+            <div class="control-map__edge control-map__edge--merchant">
+              <div class="control-map__edge-title">Merchant Surface</div>
+            </div>
+
+            <div class="control-map__channels">
+              <div class="control-channel">
+                <div class="control-channel__label icon-label icon-label--traffic">Traffic</div>
+                <div class="control-channel__band" data-step-index="1">
+                  <div class="control-channel__pull" style="--pull: 74%"></div>
+                </div>
+              </div>
+              <div class="control-channel">
+                <div class="control-channel__label icon-label icon-label--badge">Brand</div>
+                <div class="control-channel__band" data-step-index="2">
+                  <div class="control-channel__pull" style="--pull: 74%"></div>
+                </div>
+              </div>
+              <div class="control-channel">
+                <div class="control-channel__label icon-label icon-label--bars">Ranking</div>
+                <div class="control-channel__band" data-step-index="3">
+                  <div class="control-channel__pull" style="--pull: 74%"></div>
+                </div>
+              </div>
+              <div class="control-channel">
+                <div class="control-channel__label icon-label icon-label--database">Customer Data</div>
+                <div class="control-channel__band" data-step-index="4">
+                  <div class="control-channel__pull" style="--pull: 74%"></div>
+                </div>
+              </div>
+              <div class="control-channel">
+                <div class="control-channel__label icon-label icon-label--heart">Loyalty</div>
+                <div class="control-channel__band" data-step-index="5">
+                  <div class="control-channel__pull" style="--pull: 74%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="control-map__edge control-map__edge--agent">
+              <div class="control-map__edge-title">Agent Interface</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-bridge" data-slide-title="UCP Bridge">
+          <div class="slide__header">
+            <h1>A Standard Interface For Agentic Commerce</h1>
+          </div>
+
+          <div class="ucp-bridge">
+            <div class="ucp-bridge__panel ucp-bridge__panel--agents">
+              <div class="ucp-bridge__title icon-label icon-label--agent">Agent Surfaces</div>
+              <div class="ucp-bridge__stack">
+                <div class="bridge-chip"><span class="icon-label icon-label--agent">Olive for Woolworths</span></div>
+                <div class="bridge-chip"><span class="icon-label icon-label--shield">NOMI for NRMA</span></div>
+                <div class="bridge-chip"><span class="icon-label icon-label--sparkles">ChatGPT / Google AI</span></div>
+              </div>
+            </div>
+
+            <div class="ucp-bridge__core">
+              <div class="ucp-bridge__core-ring">UCP</div>
+              <div class="ucp-bridge__core-copy"><strong>Universal Commerce Protocol</strong><span>One protocol surface between agents and merchant systems</span></div>
+              <div class="ucp-bridge__note">Also covers payment handlers, tokenization, AP2, and consent.</div>
+            </div>
+
+            <div class="ucp-bridge__panel ucp-bridge__panel--capabilities">
+              <div class="ucp-bridge__title icon-label icon-label--box">Merchant Capabilities</div>
+              <div class="ucp-bridge__stack">
+                <div class="bridge-chip bridge-chip--merchant"><span class="icon-label icon-label--box">Catalog</span></div>
+                <div class="bridge-chip bridge-chip--merchant"><span class="icon-label icon-label--cart">Cart</span></div>
+                <div class="bridge-chip bridge-chip--merchant"><span class="icon-label icon-label--receipt">Checkout</span></div>
+                <div class="bridge-chip bridge-chip--merchant"><span class="icon-label icon-label--link">Identity Linking</span></div>
+                <div class="bridge-chip bridge-chip--merchant"><span class="icon-label icon-label--package">Order</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-5" data-slide-title="Slide 5">
+          <div class="slide__header">
+            <h1>Universal Commerce Protocol</h1>
+          </div>
+
+          <div class="ucp-summary">
+            <p>Universal Commerce Protocol (UCP) is an open standard for commerce interoperability, co-developed by industry leaders including Google. It gives platforms, agents, and businesses a common way to discover capabilities and transact without bespoke integrations.</p>
+            <p>Businesses publish a profile at <code>/.well-known/ucp</code>, platforms advertise their own profile on each request, and the two sides negotiate compatible services, capabilities, and transports.</p>
+          </div>
+
+          <div class="ucp-live ucp-live--single">
+            <div class="ucp-live__panel ucp-live__panel--diagram">
+              <div class="ucp-live__title">Universal Commerce Protocol</div>
+              <div class="ucp-architecture">
+                <div class="ucp-architecture__frame">
+                  <div class="ucp-side ucp-side--centered">
+                    <div class="actor-rail actor-rail--platform"><span class="icon-label icon-label--monitor">Consumer Platforms</span></div>
+                    <div class="side-note">Platforms consume business-provided services and advertise a platform profile on each request.</div>
+                  </div>
+
+                  <div class="ucp-middle">
+                    <div class="ucp-layer">
+                      <div class="ucp-layer__label icon-label icon-label--layers">Services</div>
+                      <div class="ucp-layer__row">
+                        <span class="layer-chip layer-chip--wide"><span class="icon-label icon-label--bag">Shopping</span></span>
+                        <span class="layer-chip"><span class="icon-label icon-label--plane">Travel</span></span>
+                        <span class="layer-chip"><span class="icon-label icon-label--shield">Insurance</span></span>
+                        <span class="layer-chip"><span class="icon-label icon-label--layers">Common Services</span></span>
+                        <span class="layer-chip"><span class="icon-label icon-label--sparkles">Other Verticals</span></span>
+                      </div>
+                    </div>
+
+                    <div class="ucp-layer">
+                      <div class="ucp-layer__label icon-label icon-label--box">Capabilities</div>
+                      <div class="ucp-layer__row">
+                        <span class="layer-chip"><span class="icon-label icon-label--box">Catalog</span></span>
+                        <span class="layer-chip"><span class="icon-label icon-label--cart">Cart</span></span>
+                        <span class="layer-chip"><span class="icon-label icon-label--receipt">Checkout</span></span>
+                        <span class="layer-chip"><span class="icon-label icon-label--package">Order</span></span>
+                        <span class="layer-chip"><span class="icon-label icon-label--link">Identity Linking</span></span>
+                      </div>
+                    </div>
+
+                    <div class="ucp-layer">
+                      <div class="ucp-layer__label icon-label icon-label--puzzle">Extensions</div>
+                      <div class="ucp-layer__row">
+                        <span class="layer-chip layer-chip--soft"><span class="icon-label icon-label--tag">Discount</span></span>
+                        <span class="layer-chip layer-chip--soft"><span class="icon-label icon-label--key">AP2</span></span>
+                        <span class="layer-chip layer-chip--soft"><span class="icon-label icon-label--card">Payment Handlers</span></span>
+                        <span class="layer-chip layer-chip--soft"><span class="icon-label icon-label--puzzle">Custom Extensions</span></span>
+                      </div>
+                    </div>
+
+                    <div class="ucp-layer">
+                      <div class="ucp-layer__label icon-label icon-label--plug">Transports</div>
+                      <div class="ucp-layer__row">
+                        <span class="layer-chip"><span class="icon-label icon-label--globe">REST</span></span>
+                        <span class="layer-chip"><span class="icon-label icon-label--network">MCP</span></span>
+                        <span class="layer-chip"><span class="icon-label icon-label--agent">A2A</span></span>
+                        <span class="layer-chip"><span class="icon-label icon-label--plug">Embedded</span></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="ucp-side ucp-side--centered">
+                    <div class="actor-rail actor-rail--business"><span class="icon-label icon-label--store">Business Platforms</span></div>
+                    <div class="side-note">Merchants and businesses publish a business profile at <code>/.well-known/ucp</code> and expose services such as catalog, checkout, and order management.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="ucp-architecture__footnote">
+                Live verified AU merchant profiles include
+                <a href="https://jbhifi.com.au/.well-known/ucp" target="_blank" rel="noreferrer">JB Hi-Fi</a>,
+                <a href="https://culturekings.com.au/.well-known/ucp" target="_blank" rel="noreferrer">Culture Kings</a>,
+                and
+                <a href="https://billyj.com.au/.well-known/ucp" target="_blank" rel="noreferrer">Billy J</a>.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-6" data-slide-title="Slide 6">
+          <div class="slide__header">
+            <h1>Demo Setup</h1>
+          </div>
+
+          <div class="demo-layout">
+            <div class="demo-copy">
+              <div class="demo-copy__title icon-label icon-label--check-circle">What the demo covers</div>
+              <p class="demo-copy__text">A grocery journey from intent to checkout: OlivePwC starts with a dinner brief, turns it into recipe-led product recommendations, supports Fresh Rewards linking, builds the cart, and hands off to the merchant-owned checkout flow.</p>
+              <p class="demo-copy__text">The same merchant server is also exercised through UCP Playground, proving that the experience layer is replaceable while the merchant-owned UCP stack stays the same.</p>
+              <div class="demo-copy__subhead icon-label icon-label--layers">Reusable beyond grocery</div>
+              <div class="modular-strip">
+                <span class="modular-chip modular-chip--active"><span class="icon-label icon-label--bag">Shopping</span></span>
+                <span class="modular-chip"><span class="icon-label icon-label--plane">Travel</span></span>
+                <span class="modular-chip"><span class="icon-label icon-label--shield">Insurance</span></span>
+              </div>
+              <p class="demo-copy__text demo-copy__text--small">Keep the same UCP stack. Swap the source system and ingestion path, then point the stack at the new merchant data.</p>
+            </div>
+
+            <div class="demo-setup">
+              <div class="demo-setup__section demo-setup__section--agents">
+                <div class="demo-setup__title icon-label icon-label--agent">Replaceable Agent Surfaces</div>
+                <div class="demo-surface-grid">
+                  <div class="demo-surface demo-surface--highlight">
+                    <strong class="icon-label icon-label--agent">OlivePwC</strong>
+                    <span>Primary agent experience</span>
+                  </div>
+                  <div class="demo-surface demo-surface--highlight">
+                    <strong class="icon-label icon-label--monitor">UCP Playground</strong>
+                    <span>Protocol walkthrough surface</span>
+                  </div>
+                  <div class="demo-surface">
+                    <strong class="icon-label icon-label--sparkles">ChatGPT / Google AI</strong>
+                    <span>External agent examples</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="demo-setup__connector">
+                <div class="stack-arrow stack-arrow--surfaces">
+                  <span class="stack-arrow__stem"></span>
+                </div>
+              </div>
+
+              <div class="demo-setup__boundary">
+                <div class="demo-setup__boundary-line"></div>
+                <div class="demo-setup__boundary-label">Merchant-Owned Boundary</div>
+              </div>
+
+              <div class="demo-setup__section demo-setup__section--merchant">
+                <div class="demo-setup__title icon-label icon-label--store">Merchant-Owned UCP Stack</div>
+                <div class="merchant-stack">
+                  <div class="merchant-stack__server">
+                    <div class="merchant-stack__server-title icon-label icon-label--layers">UCP Merchant Server</div>
+                    <div class="merchant-stack__capabilities">
+                      <span><span class="icon-label icon-label--compass">Discovery</span></span>
+                      <span><span class="icon-label icon-label--arrows">Negotiation</span></span>
+                      <span><span class="icon-label icon-label--box">Catalog</span></span>
+                      <span><span class="icon-label icon-label--cart">Cart</span></span>
+                      <span><span class="icon-label icon-label--receipt">Checkout</span></span>
+                      <span class="merchant-cap merchant-cap--mocked"><span class="icon-label icon-label--link">Identity</span> <em>mocked</em></span>
+                      <span class="merchant-cap merchant-cap--mocked"><span class="icon-label icon-label--card">Payments</span> <em>mocked</em></span>
+                      <span><span class="icon-label icon-label--package">Order</span></span>
+                    </div>
+                  </div>
+
+                  <div class="merchant-stack__connector">
+                    <div class="stack-arrow stack-arrow--merchant">
+                      <span class="stack-arrow__stem"></span>
+                    </div>
+                  </div>
+
+                  <div class="merchant-stack__systems">
+                    <div class="merchant-system merchant-system--search">
+                      <div class="merchant-system__title icon-label icon-label--search">Vertex AI Search for Commerce</div>
+                      <div class="merchant-system__sub">Primary search and retrieval backend</div>
+                    </div>
+                    <div class="merchant-system merchant-system--recipe merchant-system--external">
+                      <div class="merchant-system__title icon-label icon-label--bag">mealsDB</div>
+                      <div class="merchant-system__badge">External service</div>
+                      <div class="merchant-system__sub">Recipe lookup partner integrated into the demo flow</div>
+                    </div>
+                  </div>
+
+                  <div class="merchant-stack__ingestion">
+                    <div class="ingestion-flow ingestion-flow--demo ingestion-flow--full">
+                      <div class="ingestion-flow__label icon-label icon-label--upload">Ingestion</div>
+                      <div class="ingestion-flow__visual">
+                        <div class="sync-arrow sync-arrow--demo">
+                          <span class="sync-arrow__stem"></span>
+                          <span class="sync-arrow__label">manual scrape</span>
+                        </div>
+                        <span class="ingestion-pill">Retail site reference</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="slide" id="slide-7" data-slide-title="Slide 7">
+          <div class="slide__header">
+            <h1>What This Demo Proves</h1>
+          </div>
+
+          <div class="proof-board">
+            <div class="proof-card proof-card--evidence">
+              <div class="proof-card__title icon-label icon-label--check-circle">What was proven</div>
+              <div class="evidence-list">
+                <div class="evidence-item">Intent-led discovery and recipe-led basket building</div>
+                <div class="evidence-item">Loyalty-aware pricing and identity-linked journey</div>
+                <div class="evidence-item">Cart → checkout → order lifecycle through UCP</div>
+                <div class="evidence-item">One merchant server working across multiple agent surfaces</div>
+              </div>
+            </div>
+
+            <div class="proof-card proof-card--reality">
+              <div class="proof-card__title icon-label icon-label--layers">What was real vs mocked</div>
+              <div class="reality-grid">
+                <div class="reality-block">
+                  <strong>Real</strong>
+                  <ul>
+                    <li>UCP merchant server</li>
+                    <li>OlivePwC and UCP Playground flows</li>
+                    <li>Vertex AI Search for Commerce backend</li>
+                    <li>Merchant-owned checkout handoff</li>
+                  </ul>
+                </div>
+                <div class="reality-block reality-block--muted">
+                  <strong>Mocked</strong>
+                  <ul>
+                    <li>Identity linking</li>
+                    <li>Payments</li>
+                    <li>Manual ingestion path</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="proof-card proof-card--next">
+              <div class="proof-card__title icon-label icon-label--sparkles">Why it matters / what could comes next</div>
+              <div class="next-grid">
+                <div class="next-chip"><span class="icon-label icon-label--plane">Travel</span></div>
+                <div class="next-chip"><span class="icon-label icon-label--shield">Insurance</span></div>
+                <div class="next-chip"><span class="icon-label icon-label--box">B2B Procurement</span></div>
+                <div class="next-chip"><span class="icon-label icon-label--badge">Sponsored Results</span></div>
+              </div>
+              <p class="proof-note">Merchants keep the transaction layer, agent surfaces stay replaceable, and the same UCP stack can be reused across new verticals and monetisation models.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script>
+const deck = document.getElementById("deck");
+const slides = [...document.querySelectorAll(".slide")];
+const dots = [...document.querySelectorAll(".deck-dot")];
+let activeSlideId = slides[0]?.id ?? null;
+
+function setActiveDot(id) {
+  dots.forEach((dot) => {
+    dot.classList.toggle("is-active", dot.dataset.target === id);
+  });
+}
+
+function getSlideStepCount(slide) {
+  return Number(slide.dataset.stepCount || 0);
+}
+
+function getSlideStep(slide) {
+  return Number(slide.dataset.step || 0);
+}
+
+function setSlideStep(slide, nextStep) {
+  const max = getSlideStepCount(slide);
+  if (max === 0) {
+    delete slide.dataset.step;
+    slide.querySelectorAll("[data-step-index]").forEach((node) => {
+      const target =
+        node.closest(".control-channel") ??
+        node.closest(".ucp-bridge__panel") ??
+        node.closest(".ucp-bridge__core") ??
+        node;
+      target.classList.add("is-active");
+    });
+    return;
+  }
+
+  const clamped = Math.max(0, Math.min(max, nextStep));
+  slide.dataset.step = String(clamped);
+
+  slide.querySelectorAll("[data-step-index]").forEach((node) => {
+    const index = Number(node.dataset.stepIndex);
+    const target =
+      node.closest(".control-channel") ??
+      node.closest(".ucp-bridge__panel") ??
+      node.closest(".ucp-bridge__core") ??
+      node;
+    target.classList.toggle("is-active", index <= clamped);
+  });
+}
+
+function getActiveSlide() {
+  return slides.find((slide) => slide.id === activeSlideId) ?? slides[0];
+}
+
+function moveToSlide(targetIndex) {
+  const nextSlide = slides[targetIndex];
+  if (!nextSlide) return;
+  nextSlide.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function changeStep(direction) {
+  const slide = getActiveSlide();
+  if (!slide) return;
+
+  const current = getSlideStep(slide);
+  const max = getSlideStepCount(slide);
+
+  if (direction > 0) {
+    if (current < max) {
+      setSlideStep(slide, current + 1);
+      return;
+    }
+
+    const index = slides.indexOf(slide);
+    moveToSlide(index + 1);
+    return;
+  }
+
+  if (current > 0) {
+    setSlideStep(slide, current - 1);
+    return;
+  }
+
+  const index = slides.indexOf(slide);
+  const prevSlide = slides[index - 1];
+  if (prevSlide) {
+    moveToSlide(index - 1);
+    setTimeout(() => setSlideStep(prevSlide, getSlideStepCount(prevSlide)), 220);
+  }
+}
+
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        setActiveDot(entry.target.id);
+        activeSlideId = entry.target.id;
+      }
+    });
+  },
+  { root: deck, threshold: 0.55 }
+);
+
+slides.forEach((slide) => observer.observe(slide));
+
+dots.forEach((dot) => {
+  dot.addEventListener("click", () => {
+    const target = document.getElementById(dot.dataset.target);
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+});
+
+window.addEventListener("keydown", (event) => {
+  if (["ArrowRight", "ArrowDown", " ", "Enter"].includes(event.key)) {
+    event.preventDefault();
+    changeStep(1);
+  }
+
+  if (["ArrowLeft", "ArrowUp", "Backspace"].includes(event.key)) {
+    event.preventDefault();
+    changeStep(-1);
+  }
+});
+
+slides.forEach((slide) => setSlideStep(slide, getSlideStep(slide)));
+
+    </script>
+  </body>
+</html>
